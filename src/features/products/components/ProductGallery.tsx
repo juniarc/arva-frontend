@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState, type TouchEvent } from "react";
-import { SafeImage } from "@/components/ui/SafeImage";
+import { PLACEHOLDER_IMAGE, SafeImage } from "@/components/ui/SafeImage";
 import type { ProductImage } from "../types";
 import { BackButton } from "./BackButton";
 
@@ -15,7 +15,9 @@ const THUMBS_THAT_FIT = 6;
  * Main image with a thumbnail strip. The main image has a fixed height (or aspect ratio on desktop),
  * so the page does not jump while it loads. On mobile and tablet it also holds the back button.
  */
-export function ProductGallery({ images }: { images: ProductImage[] }) {
+export function ProductGallery({ images: apiImages }: { images: ProductImage[] }) {
+  // A product without images still shows a placeholder, so the layout keeps its shape.
+  const images = apiImages.length > 0 ? apiImages : [{ id: "placeholder", url: PLACEHOLDER_IMAGE, alt: "" }];
   const [index, setIndex] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);

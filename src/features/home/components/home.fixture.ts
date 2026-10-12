@@ -13,6 +13,7 @@ export function makeProduct(index: number, overrides: Partial<Product> = {}): Pr
     soldCount: 100,
     city: "Kab. Bandung",
     imageUrl: `/images/dummy/product-${index}.jpg`,
+    shopSlug: "shop",
     shopName: "Shop",
     ...overrides,
   };

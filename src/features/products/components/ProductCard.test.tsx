@@ -16,6 +16,7 @@ const base: Product = {
   soldCount: 501,
   city: "Kab. Bandung",
   imageUrl: "/images/dummy/manggo.jpg",
+  shopSlug: "tani-makmur",
   shopName: "Tani Makmur",
 };
 

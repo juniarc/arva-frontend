@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCurrency, formatSold, slugify } from "./format";
+import { formatCurrency, formatSold, formatTimeAgo } from "./format";
 
 describe("formatCurrency", () => {
   it("formats rupiah with a dot as thousands separator", () => {
@@ -24,9 +24,21 @@ describe("formatSold", () => {
   });
 });
 
-describe("slugify", () => {
-  it("makes a lowercase, dash separated slug", () => {
-    expect(slugify("Bali Fresh Farm")).toBe("bali-fresh-farm");
-    expect(slugify("  Tani & Makmur!  ")).toBe("tani-makmur");
+describe("formatTimeAgo", () => {
+  const now = new Date("2026-10-13T12:00:00Z").getTime();
+
+  it("uses the largest fitting unit", () => {
+    expect(formatTimeAgo("2026-10-13T11:59:30Z", now)).toBe("just now");
+    expect(formatTimeAgo("2026-10-13T11:55:00Z", now)).toBe("5 minutes ago");
+    expect(formatTimeAgo("2026-10-13T09:00:00Z", now)).toBe("3 hours ago");
+    expect(formatTimeAgo("2026-10-12T12:00:00Z", now)).toBe("1 day ago");
+    expect(formatTimeAgo("2026-10-06T12:00:00Z", now)).toBe("1 week ago");
+    expect(formatTimeAgo("2026-08-13T12:00:00Z", now)).toBe("2 months ago");
+    expect(formatTimeAgo("2024-10-13T12:00:00Z", now)).toBe("2 years ago");
+  });
+
+  it("returns an empty string for an invalid date and never goes negative", () => {
+    expect(formatTimeAgo("not a date", now)).toBe("");
+    expect(formatTimeAgo("2026-10-14T12:00:00Z", now)).toBe("just now");
   });
 });

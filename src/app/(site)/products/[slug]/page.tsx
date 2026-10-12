@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     title: { absolute: `${product.name} | Arva` },
     description: product.description
       ? firstSentence(product.description)
-      : `Buy ${product.name} from ${product.shopName} on Arva.`,
+      : `Buy ${product.name} from ${product.shop.name} on Arva.`,
   };
 }
 

@@ -1,8 +1,10 @@
 import "server-only";
-import { slugify } from "@/lib/format";
-import { getProductDetail as fetchProductDetail, getProducts } from "../api/catalog.server";
-import type { Product, ProductDetail, ProductPageData, ProductShop } from "../types";
-import { DUMMY_REVIEWS, getDummyReviewSummary } from "./dummy-reviews";
+import {
+  getProductDetail as fetchProductDetail,
+  getProducts,
+  getRecommendedProducts,
+} from "../api/catalog.server";
+import type { ProductDetail, ProductPageData } from "../types";
 
 const RELATED_LIMIT = 6;
 
@@ -14,40 +16,16 @@ export async function getProductDetail(slug: string): Promise<ProductDetail | nu
   throw new Error(result.message);
 }
 
-/**
- * The API only gives a shop's name, so the slug is made from it and the shop page does not exist yet.
- * Rating and logo are not in the API, so they are left out.
- */
-function toShop(product: ProductDetail): ProductShop {
-  return { slug: slugify(product.shopName), name: product.shopName, city: product.city };
-}
-
-/** GET /products has no shop filter, so the popular list is filtered here. */
-async function getRelatedProducts(product: ProductDetail): Promise<{ shopProducts: Product[]; recommended: Product[] }> {
-  const popular = await getProducts({ sort: "popular", limit: 48 });
-  const others = popular.filter((item) => item.id !== product.id);
-
-  return {
-    shopProducts: others.filter((item) => item.shopName === product.shopName).slice(0, RELATED_LIMIT),
-    recommended: others.filter((item) => item.shopName !== product.shopName).slice(0, RELATED_LIMIT),
-  };
-}
-
 /** Everything the product page needs, or null when the product does not exist. */
 export async function getProductPage(slug: string): Promise<ProductPageData | null> {
   const product = await getProductDetail(slug);
   if (!product) return null;
 
-  const { shopProducts, recommended } = await getRelatedProducts(product);
+  // Related lists are optional: both calls return an empty list on failure.
+  const [shopProducts, recommended] = await Promise.all([
+    getProducts({ shop: product.shop.slug, exclude: product.id, sort: "popular", limit: RELATED_LIMIT }),
+    getRecommendedProducts({ exclude: product.id, excludeShop: product.shop.slug, limit: RELATED_LIMIT }),
+  ]);
 
-  return {
-    product,
-    // The API has one image per product, so the gallery has one image until it returns a list.
-    images: [{ id: `${product.id}-main`, url: product.imageUrl, alt: product.name }],
-    shop: toShop(product),
-    reviewSummary: getDummyReviewSummary(product.rating),
-    reviews: DUMMY_REVIEWS,
-    shopProducts,
-    recommended,
-  };
+  return { product, shopProducts, recommended };
 }

@@ -25,13 +25,14 @@ interface ProductDetailProps {
  * - 1024px and up: gallery on the left, info and the inline purchase panel on the right.
  */
 export function ProductDetail({ data, isLoggedIn }: ProductDetailProps) {
-  const { product, images, shop, reviewSummary, reviews, shopProducts, recommended } = data;
+  const { product, shopProducts, recommended } = data;
+  const { shop } = product;
 
   return (
     <PurchaseProvider product={product} isLoggedIn={isLoggedIn}>
       <div className="mx-auto max-w-300">
         <div className="lg:grid lg:grid-cols-[2fr_3fr] lg:gap-8 lg:px-6 lg:pt-6">
-          <ProductGallery images={images} />
+          <ProductGallery images={product.images} />
 
           <div className="flex flex-col gap-5 px-4 pt-4 md:px-6 lg:px-0 lg:pt-0">
             <ProductInfo product={product} />
@@ -57,9 +58,13 @@ export function ProductDetail({ data, isLoggedIn }: ProductDetailProps) {
               Product Reviews
             </h2>
             <div className="mb-3">
-              <ReviewSummary summary={reviewSummary} />
+              <ReviewSummary rating={product.rating} />
             </div>
-            <ReviewList reviews={reviews} />
+            <ReviewList
+              slug={product.slug}
+              initialReviews={product.reviewPreview}
+              totalCount={product.rating.reviewCount}
+            />
           </section>
 
           {shopProducts.length > 0 && (

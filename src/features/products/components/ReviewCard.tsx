@@ -9,8 +9,12 @@ export function ReviewCard({ review }: { review: ProductReview }) {
   return (
     <article className="rounded-md border border-line/40 bg-white p-4">
       <div className="flex items-center gap-3">
-        <div className="relative size-8 shrink-0 overflow-hidden rounded-full bg-surface">
-          <SafeImage src={review.avatarUrl} alt="" fill sizes="2rem" className="object-cover" />
+        <div className="relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand text-sm font-bold text-white">
+          {review.avatarUrl ? (
+            <SafeImage src={review.avatarUrl} alt="" fill sizes="2rem" className="object-cover" />
+          ) : (
+            <span aria-hidden="true">{review.username.charAt(0).toUpperCase()}</span>
+          )}
         </div>
         <div>
           <h3 className="text-sm font-bold text-ink">{review.username}</h3>

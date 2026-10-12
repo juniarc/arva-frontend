@@ -6,6 +6,7 @@ import { addToCart } from "@/features/cart/api/add-to-cart";
 import { CartToast } from "@/features/cart/components/CartToast";
 import { buyNow } from "@/features/checkout/api/buy-now";
 import type { ProductDetail, ProductVariant } from "../types";
+import { PLACEHOLDER_IMAGE } from "@/components/ui/SafeImage";
 import { AddToCartModal } from "./AddToCartModal";
 
 export type PurchaseMode = "add" | "buy-now";
@@ -51,7 +52,7 @@ export function PurchaseProvider({ product, isLoggedIn, children }: PurchaseProv
   const router = useRouter();
   const opener = useRef<HTMLElement | null>(null);
 
-  const [variantId, setVariantId] = useState(product.variants[0].id);
+  const [variantId, setVariantId] = useState(product.defaultVariantId);
   const [quantity, setQuantity] = useState(1);
   const [wishlisted, setWishlisted] = useState(false);
   const [modal, setModal] = useState<PurchaseMode | null>(null);
@@ -137,7 +138,13 @@ export function PurchaseProvider({ product, isLoggedIn, children }: PurchaseProv
 
       {modal && (
         <AddToCartModal
-          product={product}
+          product={{
+            slug: product.slug,
+            name: product.name,
+            categoryName: product.categoryName,
+            imageUrl: product.images[0]?.url ?? PLACEHOLDER_IMAGE,
+            price: variant.price,
+          }}
           initialDetail={product}
           mode={modal}
           onAdded={handleAdded}

@@ -28,7 +28,7 @@ A user can be a buyer and a seller at the same time. Sellers can buy from other 
 | 10 | Products | Filters (price, category, and other attributes) | Guest | Design pending | Figma: filter modal |
 | 11 | Products | Sort (for example newest, price, best selling) | Guest | Design pending | Figma: sort |
 | 12 | Products | Search (products, categories, shops) | Guest | Design pending | Figma: search results |
-| 13 | Products | Product detail (images, variants, stock, price, discount, reviews) | Guest | In progress (reviews are sample data) | Figma: product detail |
+| 13 | Products | Product detail (images, variants, stock, price, discount, reviews) | Guest | In progress (uses the backend API) | Figma: product detail |
 | 14 | Products | Ratings and reviews | Buyer (write), Guest (read) | Design pending | Figma: review section, rating modal |
 | 15 | Shops | Public shop page (shop info, products) | Guest | Design pending | Figma: shop page |
 | 16 | Shops | Create shop | Buyer | Design pending | Figma: create shop |

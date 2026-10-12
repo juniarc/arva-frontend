@@ -9,11 +9,11 @@ import { addToCart } from "@/features/cart/api/add-to-cart";
 import { buyNow } from "@/features/checkout/api/buy-now";
 import { formatCurrency } from "@/lib/format";
 import { fetchProductDetail } from "../api/products";
-import type { Product, ProductDetail } from "../types";
+import type { ProductDetail, ProductSummary } from "../types";
 
 interface AddToCartModalProps {
-  /** The card's product. Its name, image and lowest price show while the variants load. */
-  product: Product;
+  /** Its name, image and price show while the variants load. */
+  product: ProductSummary;
   /** Called after the native dialog has closed (X, overlay, Escape, or after adding). */
   onClose: () => void;
   /** Called when the product was added, just before the modal closes. Not called in buy-now mode. */

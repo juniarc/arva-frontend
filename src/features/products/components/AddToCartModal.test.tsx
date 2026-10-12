@@ -1,8 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Product, ProductDetail } from "../types";
+import type { Product } from "../types";
 import { ProductCard } from "./ProductCard";
+import { makeProductDetail } from "./product-page.fixture";
 
 const { push, refresh, addToCartMock, fetchProductDetailMock } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -26,18 +27,18 @@ const product: Product = {
   soldCount: 501,
   city: "Kab. Bandung",
   imageUrl: "/images/dummy/balis-banana-fruit.jpg",
+  shopSlug: "kebun-bali",
   shopName: "Kebun Bali",
 };
 
-const detail: ProductDetail = {
-  ...product,
-  description: "Sweet bananas.",
+const detail = makeProductDetail({
+  slug: "balis-banana-fruit",
   variants: [
     { id: "v1", label: "500 ml", price: 1000, stock: 3, unit: "kg" },
     { id: "v2", label: "1000 ml", price: 2000, stock: 250, unit: "kg" },
     { id: "v3", label: "2000 ml", price: 3800, stock: 0, unit: "kg" },
   ],
-};
+});
 
 async function openModal(card: Product = product) {
   const user = userEvent.setup();
