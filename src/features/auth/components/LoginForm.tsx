@@ -57,7 +57,7 @@ export function LoginForm({ successMessage, redirectTo }: LoginFormProps) {
         successMessage && <Alert variant="success" message={successMessage} />
       )}
 
-      <h1 className="text-center font-serif text-2xl font-bold text-ink">Login to Your Account</h1>
+      <h1 className="text-center font-serif text-3xl font-bold text-ink">Login to Your Account</h1>
 
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <TextInput

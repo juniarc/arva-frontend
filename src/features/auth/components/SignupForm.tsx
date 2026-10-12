@@ -50,7 +50,7 @@ export function SignupForm() {
     <div className="flex flex-col gap-5">
       {formError && <Alert variant="error" message={formError} />}
 
-      <h1 className="text-center font-serif text-2xl font-bold text-ink">Create Your Account</h1>
+      <h1 className="text-center font-serif text-3xl font-bold text-ink">Create Your Account</h1>
 
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <TextInput
@@ -89,7 +89,7 @@ export function SignupForm() {
           {...register("confirmPassword")}
         />
 
-        <Button type="submit" loading={isSubmitting} className="mt-2">
+        <Button type="submit" variant="brand" loading={isSubmitting} className="mt-2">
           Sign Up
         </Button>
       </form>

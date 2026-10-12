@@ -21,7 +21,7 @@ export function TextInput({ id, label, error, icon, trailing, className = "", ..
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted">
+      <label htmlFor={id} className="sr-only">
         {label}
       </label>
       <div
