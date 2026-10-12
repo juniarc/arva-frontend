@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. Components use these names (bg-brand, text-danger, ...)
+ * and never raw hex values. Verify against Figma's Inspect panel.
+ */
+@theme {
+  /* Brand */
+  --color-brand: #2e5e33; /* header, logo */
+  --color-mint: #b5ebd3; /* mint button, success banner */
+  --color-charcoal: #5c5c5c; /* primary button */
+  --color-info: #2d8cf0; /* success banner outline */
+
+  /* Feedback */
+  --color-danger-soft: #fadada; /* error banner background */
+  --color-danger: #d32f2f; /* error icon/border, field errors on white */
+  --color-danger-strong: #b71c1c; /* error banner text (AA contrast on danger-soft) */
+
+  /* Neutrals */
+  --color-ink: #1f1f1f;
+  --color-muted: #6b6b6b;
+  --color-line: #8a8a8a;
+
+  /* Illustration palette */
+  --color-art-ground: #2f5d32;
+  --color-art-tree: #1f4a27;
+  --color-art-mountain: #dcdcdc;
+  --color-art-mountain-dark: #c8c8c8;
+  --color-art-sun: #f2a07b;
+  --color-art-skin: #f1c9a5;
+  --color-art-shirt: #b9c9a8;
+  --color-art-pants: #5a6b50;
+  --color-art-boots: #2b3a4a;
+  --color-art-crate: #7a5a35;
+  --color-art-produce: #e07a6e;
+  --color-art-tub: #3b4a57;
+  --color-art-chicken: #f7f7f7;
+
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+}
+
+body {
+  background-color: white;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
