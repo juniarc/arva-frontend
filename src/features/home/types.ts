@@ -1,39 +1,18 @@
-import type { Product } from "@/features/products/types";
+import type { Banner } from "@/features/products/schemas/catalog.schema";
+import type { Category, Product } from "@/features/products/types";
 
-export interface HeroSlide {
-  id: string;
-  title: string;
-  badge?: string;
-  subtitle?: string;
-  /** Small line at the bottom, e.g. "Go shop online: www.web.com". */
-  footnote?: string;
-  imageUrl: string;
-}
+export type { Banner };
 
-export interface SideBanner {
-  id: string;
-  imageUrl: string;
-  alt: string;
-}
-
-export interface PromoStripData {
-  id: string;
-  title: string;
-  subtitle: string;
-  ctaLabel: string;
-  href: string;
-  imageUrl: string;
-}
-
+/** Everything the home page shows. Built by `getHomeSections()`. */
 export interface HomeSectionsData {
-  hero: {
-    desktopSlides: HeroSlide[];
-    mobileSlides: HeroSlide[];
-    sideBanners: SideBanner[];
+  banners: {
+    carousel: Banner[];
+    promoStrips: Banner[];
+    sideBanners: Banner[];
+    verticalBanners: Banner[];
   };
-  sidebarBannerUrl: string;
+  categories: Category[];
   popularProducts: Product[];
-  promoStrips: PromoStripData[];
   fruits: Product[];
   equipments: Product[];
 }

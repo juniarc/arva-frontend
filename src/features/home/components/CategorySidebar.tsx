@@ -1,14 +1,22 @@
 import { Award, Percent } from "lucide-react";
 import Link from "next/link";
 import { SafeImage } from "@/components/ui/SafeImage";
-import { CATEGORIES, categoryHref } from "@/features/products/data/categories";
+import { categoryHref, categoryIcon } from "@/features/products/data/categories";
+import type { Category } from "@/features/products/types";
+import type { Banner } from "../types";
+import { BannerFrame } from "./BannerFrame";
 
 const ROW =
   "flex min-h-11 items-center gap-3 rounded-sm px-2 text-xs text-ink hover:text-brand " +
   "focus-visible:outline-2 focus-visible:outline-info";
 
-/** Desktop-only category card plus a tall promo banner. Wrap it in <DesktopOnly>. */
-export function CategorySidebar({ bannerUrl }: { bannerUrl: string }) {
+interface CategorySidebarProps {
+  categories: Category[];
+  banners: Banner[];
+}
+
+/** Desktop-only category card plus the tall promo banners. Wrap it in <DesktopOnly>. */
+export function CategorySidebar({ categories, banners }: CategorySidebarProps) {
   return (
     <div className="flex flex-col gap-4">
       <nav aria-labelledby="sidebar-category-title" className="rounded-md bg-surface p-4">
@@ -18,14 +26,17 @@ export function CategorySidebar({ bannerUrl }: { bannerUrl: string }) {
         <span className="mb-3 mt-1 block h-0.5 w-8 bg-brand" aria-hidden="true" />
 
         <ul>
-          {CATEGORIES.map(({ slug, name, icon: Icon }) => (
-            <li key={slug}>
-              <Link href={categoryHref(slug)} className={ROW}>
-                <Icon className="size-4 shrink-0" aria-hidden="true" />
-                {name}
-              </Link>
-            </li>
-          ))}
+          {categories.map(({ id, slug, name, iconKey }) => {
+            const Icon = categoryIcon(iconKey);
+            return (
+              <li key={id}>
+                <Link href={categoryHref(slug)} className={ROW}>
+                  <Icon className="size-4 shrink-0" aria-hidden="true" />
+                  {name}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         <hr className="my-2 border-mint" />
@@ -46,9 +57,15 @@ export function CategorySidebar({ bannerUrl }: { bannerUrl: string }) {
         </ul>
       </nav>
 
-      <div className="relative aspect-[3/5] overflow-hidden rounded-md bg-brand">
-        <SafeImage src={bannerUrl} alt="Promotional banner" fill sizes="15rem" className="object-cover" />
-      </div>
+      {banners.map((banner) => (
+        <BannerFrame
+          key={banner.id}
+          href={banner.linkUrl}
+          className="relative block aspect-[3/5] overflow-hidden rounded-md bg-brand"
+        >
+          <SafeImage src={banner.imageUrl} alt={banner.title} fill sizes="15rem" className="object-cover" />
+        </BannerFrame>
+      ))}
     </div>
   );
 }

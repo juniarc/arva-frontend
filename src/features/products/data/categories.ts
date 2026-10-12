@@ -1,22 +1,19 @@
-import { Apple, Leaf, Package, Sprout, Wrench, type LucideIcon } from "lucide-react";
-import type { CategorySlug } from "../types";
+import { Apple, Leaf, Package, Sprout, Tag, Wrench, type LucideIcon } from "lucide-react";
 
-export interface Category {
-  slug: CategorySlug;
-  name: string;
-  icon: LucideIcon;
+/** Maps the backend's `iconKey` to an icon. Unknown keys get a generic tag icon. */
+const ICONS: Record<string, LucideIcon> = {
+  seeds: Sprout,
+  vegetables: Leaf,
+  fruits: Apple,
+  fertilizers: Package,
+  equipments: Wrench,
+};
+
+export function categoryIcon(iconKey: string): LucideIcon {
+  return ICONS[iconKey] ?? Tag;
 }
 
-/** The single category list. The sidebar, mobile row, tiles, menu and footer all read it. */
-export const CATEGORIES: readonly Category[] = [
-  { slug: "seeds", name: "Seeds", icon: Sprout },
-  { slug: "vegetables", name: "Vegetables", icon: Leaf },
-  { slug: "fruits", name: "Fruits", icon: Apple },
-  { slug: "fertilizers", name: "Fertilizers", icon: Package },
-  { slug: "equipments", name: "Equipments", icon: Wrench },
-];
-
 /** The /products page is not built yet. */
-export function categoryHref(slug: CategorySlug): string {
-  return `/products?category=${slug}`;
+export function categoryHref(slug: string): string {
+  return `/products?category=${encodeURIComponent(slug)}`;
 }

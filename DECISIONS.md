@@ -50,11 +50,16 @@ Reason: each step depends on the one before it. Payments come last because they 
 **Cart items do not reserve stock. Stock is checked at checkout.**
 Reason: simpler and common in marketplaces. Re-check stock when the order is placed, and reject orders that can't be fulfilled.
 
-**Home page uses dummy data behind `getHomeSections()`. Footer lives in the `(site)` layout.**
-Reason: the design is ready but there is no catalog API contract yet. Components only receive data through props, so swapping in the API later touches `features/home/data/home.loader.ts` only. Desktop-only sections are hidden below 1024px with `DesktopOnly` / `BelowDesktop` (`components/layout/ResponsiveOnly.tsx`). The category list is defined once in `features/products/data/categories.ts`.
+**Home, categories, product detail and cart come from the backend API. There is no dummy data left.**
+Reason: the backend now has these endpoints. Server code reads them through `features/products/api/catalog.server.ts` and `features/cart/api/cart.server.ts`; responses are parsed with zod. The browser only talks to our own `/api/products/[slug]` and `/api/cart` routes, so the token stays in the httpOnly cookie. Category icons come from the API's `iconKey` (see `features/products/data/categories.ts`). Desktop-only sections are hidden below 1024px with `DesktopOnly` / `BelowDesktop`.
 
-**The product card opens an Add to Cart modal. The cart call is a stub until the cart feature starts.**
-Reason: the `/cart` contract does not exist yet. `features/cart/api/add-to-cart.ts` is the single place to replace with `POST /api/cart`. The modal is a native `<dialog>` (bottom sheet below 768px, centered card from 768px). Guests are sent to `/login?redirect=<current path>`; the login state comes from `isLoggedIn()` in `lib/session.ts` (cookie presence only, like the middleware).
+**The product card opens an Add to Cart modal that loads the variants from `GET /products/:slug`.**
+Reason: card data (`GET /home`) has no variants. The modal is a native `<dialog>` (bottom sheet below 768px, centered card from 768px). Guests are sent to `/login?redirect=<current path>`; the login state comes from `isLoggedIn()` in `lib/session.ts` (cookie presence only). After adding, the page refreshes so the header cart badge and drawer update.
+
+**The product page (`/products/[slug]`) uses the real API where it can. Reviews are sample data.**
+Reason: `GET /products/:slug` gives the product, description and variants, and `GET /products` gives related products. There is no reviews endpoint and no shop details (rating, logo) yet, so reviews come from `features/products/data/dummy-reviews.ts` and the shop card only shows name and city. "Products from this shop" filters the popular list by shop name, because the list has no shop filter. The shop slug is made from the shop name (`slugify`) until the API returns one.
+
+**Product page layout.** One component tree: below 1024px the buying actions live in the Add to Cart modal, opened from a sticky bottom bar (sticky, not fixed, so it never covers the footer); from 1024px the purchase panel is inline. The mobile back arrow sits on the main image, so the global header is unchanged. Buy Now is a stub that shows "Checkout is coming soon."; the wishlist heart only changes the page until the wishlist API exists.
 
 **Alert is one component for success and error messages.** Success is mint with no border; error has a 1px red border. Error text uses `danger-strong` instead of `danger` so it stays readable (AA) on the soft red background.
 

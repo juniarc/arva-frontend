@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { InstagramIcon, TikTokIcon, XIcon, YouTubeIcon } from "@/components/icons/brand-icons";
-import { CATEGORIES, categoryHref } from "@/features/products/data/categories";
+import { getCategories } from "@/features/products/api/catalog.server";
+import { categoryHref, categoryIcon } from "@/features/products/data/categories";
 
 // Placeholder social URLs until real accounts exist.
 const SOCIAL_LINKS = [
@@ -13,7 +14,9 @@ const SOCIAL_LINKS = [
 const HEADING = "mb-3 font-serif text-xl font-bold";
 
 /** Dark green site footer. Four columns on desktop, stacked on mobile. */
-export function SiteFooter() {
+export async function SiteFooter() {
+  const categories = await getCategories();
+
   return (
     <footer className="bg-brand text-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-2 md:px-6 lg:grid-cols-4">
@@ -31,17 +34,20 @@ export function SiteFooter() {
             Categories
           </h2>
           <ul className="grid grid-cols-2 gap-x-4 lg:grid-cols-1">
-            {CATEGORIES.map(({ slug, name, icon: Icon }) => (
-              <li key={slug}>
-                <Link
-                  href={categoryHref(slug)}
-                  className="flex min-h-11 items-center gap-3 text-sm hover:underline focus-visible:outline-2 focus-visible:outline-white"
-                >
-                  <Icon className="size-4 shrink-0" aria-hidden="true" />
-                  {name}
-                </Link>
-              </li>
-            ))}
+            {categories.map(({ id, slug, name, iconKey }) => {
+              const Icon = categoryIcon(iconKey);
+              return (
+                <li key={id}>
+                  <Link
+                    href={categoryHref(slug)}
+                    className="flex min-h-11 items-center gap-3 text-sm hover:underline focus-visible:outline-2 focus-visible:outline-white"
+                  >
+                    <Icon className="size-4 shrink-0" aria-hidden="true" />
+                    {name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 

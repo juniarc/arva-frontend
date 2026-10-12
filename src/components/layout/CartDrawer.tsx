@@ -2,17 +2,9 @@
 
 import { X } from "lucide-react";
 import Link from "next/link";
+import { SafeImage } from "@/components/ui/SafeImage";
+import type { CartPreviewItem } from "@/features/cart/cart-preview";
 import { MobileDrawer } from "./MobileDrawer";
-
-/** One row in the cart preview. Filled from the backend once the /cart contract exists. */
-export interface CartPreviewItem {
-  id: string;
-  name: string;
-  variant: string;
-  quantity: number;
-  /** Already formatted, e.g. "Rp. 1000". */
-  price: string;
-}
 
 interface CartDrawerProps {
   open: boolean;
@@ -65,10 +57,9 @@ export function CartDrawer({
               key={item.id}
               className="flex gap-3 border-b border-line/40 py-3 last:border-b-0"
             >
-              <div
-                className="size-8 shrink-0 rounded-sm bg-mint"
-                aria-hidden="true"
-              />
+              <div className="relative size-8 shrink-0 overflow-hidden rounded-sm bg-surface">
+                <SafeImage src={item.imageUrl} alt="" fill sizes="2rem" className="object-cover" />
+              </div>
               <div className="min-w-0 text-xs">
                 <p className="truncate text-ink">{item.name}</p>
                 <p className="text-[10px] text-muted">{item.variant}</p>

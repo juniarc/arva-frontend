@@ -13,13 +13,15 @@ interface RequestOptions {
   body?: unknown;
   headers?: Record<string, string>;
   timeoutMs?: number;
+  /** Cache the response for this many seconds (public data only). Default: never cache. */
+  revalidateSeconds?: number;
 }
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 export async function requestJson<T = unknown>(
   url: string,
-  { method = "GET", body, headers, timeoutMs = DEFAULT_TIMEOUT_MS }: RequestOptions = {},
+  { method = "GET", body, headers, timeoutMs = DEFAULT_TIMEOUT_MS, revalidateSeconds }: RequestOptions = {},
 ): Promise<HttpResult<T>> {
   let response: Response;
 
@@ -32,7 +34,9 @@ export async function requestJson<T = unknown>(
         ...headers,
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
-      cache: "no-store",
+      ...(revalidateSeconds === undefined
+        ? { cache: "no-store" as const }
+        : { next: { revalidate: revalidateSeconds } }),
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch {

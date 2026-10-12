@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Product } from "../types";
 import { ProductCard } from "./ProductCard";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 
 const base: Product = {
   id: "p1",
@@ -17,7 +17,6 @@ const base: Product = {
   city: "Kab. Bandung",
   imageUrl: "/images/dummy/manggo.jpg",
   shopName: "Tani Makmur",
-  variants: [{ id: "p1-v1", label: "1 kg", price: 2000, stock: 10, unit: "kg" }],
 };
 
 describe("ProductCard", () => {

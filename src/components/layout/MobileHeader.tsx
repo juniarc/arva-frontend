@@ -3,6 +3,8 @@
 import { Menu, Search, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import type { CartPreviewItem } from "@/features/cart/cart-preview";
+import type { Category } from "@/features/products/types";
 import { CartDrawer } from "./CartDrawer";
 import { MobileMenu } from "./MobileMenu";
 import { MobileSearchPanel } from "./MobileSearchPanel";
@@ -18,12 +20,16 @@ const ICON_BUTTON =
 
 interface MobileHeaderProps {
   cartCount?: number;
+  cartItems?: CartPreviewItem[];
+  categories: Category[];
   isAuthenticated: boolean;
 }
 
 /** Compact green header for small screens: logo, search, cart, and menu. One panel is open at a time. */
 export function MobileHeader({
   cartCount = 0,
+  cartItems,
+  categories,
   isAuthenticated,
 }: MobileHeaderProps) {
   const [active, setActive] = useState<Panel | null>(null);
@@ -102,11 +108,13 @@ export function MobileHeader({
         open={active === "cart"}
         onClose={closeIfActive("cart")}
         count={cartCount}
+        items={cartItems}
       />
       <MobileMenu
         open={active === "menu"}
         onClose={closeIfActive("menu")}
         isAuthenticated={isAuthenticated}
+        categories={categories}
       />
     </header>
   );

@@ -23,12 +23,12 @@ A user can be a buyer and a seller at the same time. Sellers can buy from other 
 | 5 | Auth | Log out | Buyer, Seller | Not started | Not in design yet |
 | 6 | Layout | Global header (top bar, search, Wishlist, Cart, My Profile) | All | In progress (auth pages) | Figma: auth frames |
 | 7 | Layout | Footer | All | In progress (home page, dummy content) | Figma: home |
-| 8 | Home | Home page with hero, categories, and product sections | Guest | In progress (dummy data, no backend) | Figma: home |
+| 8 | Home | Home page with hero, categories, and product sections | Guest | In progress (uses the backend API) | Figma: home |
 | 9 | Products | Product list by category | Guest | Design pending | Figma: products |
 | 10 | Products | Filters (price, category, and other attributes) | Guest | Design pending | Figma: filter modal |
 | 11 | Products | Sort (for example newest, price, best selling) | Guest | Design pending | Figma: sort |
 | 12 | Products | Search (products, categories, shops) | Guest | Design pending | Figma: search results |
-| 13 | Products | Product detail (images, variants, stock, price, discount, reviews) | Guest | Design pending | Figma: product detail |
+| 13 | Products | Product detail (images, variants, stock, price, discount, reviews) | Guest | In progress (reviews are sample data) | Figma: product detail |
 | 14 | Products | Ratings and reviews | Buyer (write), Guest (read) | Design pending | Figma: review section, rating modal |
 | 15 | Shops | Public shop page (shop info, products) | Guest | Design pending | Figma: shop page |
 | 16 | Shops | Create shop | Buyer | Design pending | Figma: create shop |

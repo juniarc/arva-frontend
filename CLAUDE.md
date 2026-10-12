@@ -138,6 +138,14 @@ Auth (in use now):
   - 200: `{ access_token, user: { user_id, username, email } }`
   - 401: `{ message }`
 
+Catalog and cart (the full contract lives in the backend repo, `arva-backend/CLAUDE.md`). The frontend uses:
+
+- `GET /home`: banners (`carousel`, `promoStrips`, `sideBanners`, `verticalBanners`) and the `popular`, `fruits`, `equipments` product sections. A banner's `linkUrl`, `buttonLabel` and `subtitle` can be null.
+- `GET /categories`: `{ categories: [{ id, slug, name, iconKey }] }`.
+- `GET /products/:slug`: one product with all its variants. The add-to-cart modal loads it through our own `GET /api/products/[slug]` route when it opens.
+- `GET /cart` and `POST /cart` (Bearer token): the header reads the cart for the badge and drawer; the modal adds through our own `POST /api/cart` route, which forwards the token from the httpOnly cookie.
+- Not used yet: `GET /products` (list) and `GET /auth/me`.
+
 Planned endpoint groups (no contract yet): `/products`, `/categories`, `/shops`, `/shops/me`, `/products/mine`, `/cart`, `/wishlist`, `/orders`, `/vouchers`, `/reviews`. Each group gets a contract here before its feature begins.
 
 If a backend change is needed, update this section and `docs/DECISIONS.md` first, then the code.

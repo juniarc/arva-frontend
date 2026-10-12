@@ -1,24 +1,28 @@
+import { requestJson } from "@/lib/api/http";
+
 export interface AddToCartInput {
-  productId: string;
   variantId: string;
   quantity: number;
 }
 
 export type AddToCartResult = { ok: true } | { ok: false; message: string };
 
-/** Set to true to see how the modal handles a failed request. */
-const SIMULATE_FAILURE = false;
+const GENERIC_FAILURE = "Could not add to cart. Please try again.";
 
-const STUB_DELAY_MS = 600;
-
-/**
- * Stub: waits a moment and succeeds. The real call goes to POST /api/cart when the cart
- * feature is built. Keep this signature so the modal does not need to change.
- */
+/** Browser-side: adds a variant to the cart through our own POST /api/cart route. */
 export async function addToCart(input: AddToCartInput): Promise<AddToCartResult> {
-  void input;
-  await new Promise((resolve) => setTimeout(resolve, STUB_DELAY_MS));
+  const result = await requestJson("/api/cart", { method: "POST", body: input });
 
-  if (SIMULATE_FAILURE) return { ok: false, message: "Could not add to cart. Please try again." };
-  return { ok: true };
+  if (result.ok) return { ok: true };
+
+  if (result.reason === "network") {
+    return { ok: false, message: "Unable to reach the server. Please try again." };
+  }
+
+  const body = result.body;
+  if (typeof body === "object" && body !== null && "message" in body) {
+    const { message } = body;
+    if (typeof message === "string" && message.length > 0) return { ok: false, message };
+  }
+  return { ok: false, message: GENERIC_FAILURE };
 }

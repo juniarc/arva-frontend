@@ -2,15 +2,13 @@ import { Heart, ShoppingCart, User } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { getCart } from "@/features/cart/api/cart.server";
+import { toCartPreview } from "@/features/cart/cart-preview";
+import { getCategories } from "@/features/products/api/catalog.server";
 import { AUTH_COOKIE_NAME } from "@/lib/cookies";
 import { MobileHeader } from "./MobileHeader";
 import { SearchBar } from "./SearchBar";
 import { TopBar } from "./TopBar";
-
-interface GlobalHeaderProps {
-  /** Number of items in the cart. The red badge only shows when this is above 0. */
-  cartCount?: number;
-}
 
 const NAV_LINK =
   "relative flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-xs text-ink " +
@@ -35,13 +33,20 @@ function NavLink({
 }
 
 /** Site-wide header: utility bar, logo, search, and Wishlist / Cart / Profile links. */
-export async function GlobalHeader({ cartCount = 0 }: GlobalHeaderProps) {
-  // Presence check only; the backend still verifies the token on real requests.
-  const isAuthenticated = (await cookies()).has(AUTH_COOKIE_NAME);
+export async function GlobalHeader() {
+  // A token cookie means "logged in" here; the backend still verifies it on every real request.
+  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
+  const [categories, cart] = await Promise.all([getCategories(), token ? getCart(token) : undefined]);
+  const cartCount = cart?.itemCount ?? 0;
 
   return (
     <>
-      <MobileHeader cartCount={cartCount} isAuthenticated={isAuthenticated} />
+      <MobileHeader
+        cartCount={cartCount}
+        cartItems={cart ? toCartPreview(cart) : undefined}
+        categories={categories}
+        isAuthenticated={Boolean(token)}
+      />
       <header className="hidden border-b border-line/40 md:block">
         <TopBar />
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 sm:px-6">

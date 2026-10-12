@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { logout } from "@/features/auth/api/auth";
-import { CATEGORIES, categoryHref } from "@/features/products/data/categories";
+import { categoryHref, categoryIcon } from "@/features/products/data/categories";
+import type { Category } from "@/features/products/types";
 import { MobileDrawer } from "./MobileDrawer";
 
 const ROW =
@@ -19,6 +20,7 @@ interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
   isAuthenticated: boolean;
+  categories: Category[];
   /** Shown in the green header when signed in. Omitted until the backend can return the current user. */
   user?: { username: string; email: string };
 }
@@ -32,6 +34,7 @@ export function MobileMenu({
   open,
   onClose,
   isAuthenticated,
+  categories,
   user,
 }: MobileMenuProps) {
   const router = useRouter();
@@ -92,14 +95,17 @@ export function MobileMenu({
         </h2>
         <Section>
           <ul>
-            {CATEGORIES.map(({ name, slug, icon: Icon }) => (
-              <li key={slug}>
-                <Link href={categoryHref(slug)} className={ROW}>
-                  <Icon className="size-4 shrink-0" aria-hidden="true" />
-                  {name}
-                </Link>
-              </li>
-            ))}
+            {categories.map(({ id, name, slug, iconKey }) => {
+              const Icon = categoryIcon(iconKey);
+              return (
+                <li key={id}>
+                  <Link href={categoryHref(slug)} className={ROW}>
+                    <Icon className="size-4 shrink-0" aria-hidden="true" />
+                    {name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </Section>
 

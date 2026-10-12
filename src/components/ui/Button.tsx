@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ComponentProps } from "react";
 
-export type ButtonVariant = "primary" | "brand" | "outline" | "mint";
+export type ButtonVariant = "primary" | "brand" | "brand-outline" | "outline" | "mint";
 
 const BASE =
   "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm px-4 text-sm " +
@@ -11,6 +11,7 @@ const BASE =
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-charcoal font-serif font-bold text-white hover:bg-ink",
   brand: "bg-brand font-serif font-bold text-white hover:brightness-110",
+  "brand-outline": "border border-brand bg-white font-semibold text-brand hover:bg-mint/30",
   mint: "bg-mint font-serif font-bold text-ink hover:brightness-95",
   outline: "border border-line bg-white font-medium text-ink hover:bg-mint/30",
 };

@@ -2,14 +2,11 @@
 
 import { ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { Alert } from "@/components/ui/Alert";
+import { useRef, useState } from "react";
 import { IconButton } from "@/components/ui/IconButton";
+import { CartToast } from "@/features/cart/components/CartToast";
 import type { Product } from "../types";
 import { AddToCartModal } from "./AddToCartModal";
-
-const TOAST_MS = 3000;
 
 interface AddToCartButtonProps {
   product: Product;
@@ -24,12 +21,6 @@ export function AddToCartButton({ product, isLoggedIn }: AddToCartButtonProps) {
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(null), TOAST_MS);
-    return () => clearTimeout(timer);
-  }, [toast]);
-
   const handleClick = () => {
     if (!isLoggedIn) {
       const here = `${window.location.pathname}${window.location.search}`;
@@ -37,6 +28,12 @@ export function AddToCartButton({ product, isLoggedIn }: AddToCartButtonProps) {
       return;
     }
     setOpen(true);
+  };
+
+  const handleAdded = () => {
+    setToast("Product added to cart.");
+    // Re-render the server components so the cart badge and drawer show the new count.
+    router.refresh();
   };
 
   const handleClose = () => {
@@ -56,17 +53,11 @@ export function AddToCartButton({ product, isLoggedIn }: AddToCartButtonProps) {
         <AddToCartModal
           product={product}
           onClose={handleClose}
-          onAdded={() => setToast("Product added to cart.")}
+          onAdded={handleAdded}
         />
       )}
 
-      {toast &&
-        createPortal(
-          <div className="fixed inset-x-0 top-0 z-50 mx-auto max-w-7xl p-4">
-            <Alert variant="success" message={toast} onClose={() => setToast(null)} />
-          </div>,
-          document.body,
-        )}
+      <CartToast message={toast} onDismiss={() => setToast(null)} />
     </>
   );
 }
