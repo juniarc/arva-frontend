@@ -50,6 +50,14 @@ Reason: each step depends on the one before it. Payments come last because they 
 **Cart items do not reserve stock. Stock is checked at checkout.**
 Reason: simpler and common in marketplaces. Re-check stock when the order is placed, and reject orders that can't be fulfilled.
 
+**Home page uses dummy data behind `getHomeSections()`. Footer lives in the `(site)` layout.**
+Reason: the design is ready but there is no catalog API contract yet. Components only receive data through props, so swapping in the API later touches `features/home/data/home.loader.ts` only. Desktop-only sections are hidden below 1024px with `DesktopOnly` / `BelowDesktop` (`components/layout/ResponsiveOnly.tsx`). The category list is defined once in `features/products/data/categories.ts`.
+
+**The product card opens an Add to Cart modal. The cart call is a stub until the cart feature starts.**
+Reason: the `/cart` contract does not exist yet. `features/cart/api/add-to-cart.ts` is the single place to replace with `POST /api/cart`. The modal is a native `<dialog>` (bottom sheet below 768px, centered card from 768px). Guests are sent to `/login?redirect=<current path>`; the login state comes from `isLoggedIn()` in `lib/session.ts` (cookie presence only, like the middleware).
+
+**Alert is one component for success and error messages.** Success is mint with no border; error has a 1px red border. Error text uses `danger-strong` instead of `danger` so it stays readable (AA) on the soft red background.
+
 ## Open questions
 
 - Payments provider (decide after the main features are done).

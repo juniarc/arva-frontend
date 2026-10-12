@@ -22,3 +22,16 @@ export function setAuthCookie(response: NextResponse, token: string): void {
     maxAge: AUTH_COOKIE_MAX_AGE_SECONDS,
   });
 }
+
+/** Removes the auth cookie (log out). The attributes must match the ones used to set it. */
+export function clearAuthCookie(response: NextResponse): void {
+  response.cookies.set({
+    name: AUTH_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+}

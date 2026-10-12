@@ -22,8 +22,8 @@ A user can be a buyer and a seller at the same time. Sellers can buy from other 
 | 4 | Auth | Forgot password | Guest | Design pending (placeholder route only) | Figma: link on Login |
 | 5 | Auth | Log out | Buyer, Seller | Not started | Not in design yet |
 | 6 | Layout | Global header (top bar, search, Wishlist, Cart, My Profile) | All | In progress (auth pages) | Figma: auth frames |
-| 7 | Layout | Footer | All | Design pending | Not in design yet |
-| 8 | Home | Home page with hero, categories, and product sections | Guest | Design pending | Figma: home |
+| 7 | Layout | Footer | All | In progress (home page, dummy content) | Figma: home |
+| 8 | Home | Home page with hero, categories, and product sections | Guest | In progress (dummy data, no backend) | Figma: home |
 | 9 | Products | Product list by category | Guest | Design pending | Figma: products |
 | 10 | Products | Filters (price, category, and other attributes) | Guest | Design pending | Figma: filter modal |
 | 11 | Products | Sort (for example newest, price, best selling) | Guest | Design pending | Figma: sort |

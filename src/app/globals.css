@@ -16,6 +16,28 @@
   --color-danger: #d32f2f; /* error icon/border, field errors on white */
   --color-danger-strong: #b71c1c; /* error banner text (AA contrast on danger-soft) */
 
+  /* Marketplace */
+  --color-star: #f5b301; /* rating star */
+  --color-promo: #f9d65c; /* yellow promo strips */
+  --color-surface: #f5f5f5; /* sidebar card, image placeholders */
+  --color-chip: #e0e0e0; /* unselected variant chip */
+
+  /* Modal animations (see AddToCartModal). Removed for reduced motion in the component classes. */
+  --animate-fade-in: fade-in 200ms ease-out;
+  --animate-sheet-up: sheet-up 250ms ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
   /* Neutrals */
   --color-ink: #1f1f1f;
   --color-muted: #6b6b6b;

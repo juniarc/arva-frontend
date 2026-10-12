@@ -1,6 +1,8 @@
 import { Heart, ShoppingCart, User } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AUTH_COOKIE_NAME } from "@/lib/cookies";
 import { MobileHeader } from "./MobileHeader";
 import { SearchBar } from "./SearchBar";
 import { TopBar } from "./TopBar";
@@ -33,10 +35,13 @@ function NavLink({
 }
 
 /** Site-wide header: utility bar, logo, search, and Wishlist / Cart / Profile links. */
-export function GlobalHeader({ cartCount = 0 }: GlobalHeaderProps) {
+export async function GlobalHeader({ cartCount = 0 }: GlobalHeaderProps) {
+  // Presence check only; the backend still verifies the token on real requests.
+  const isAuthenticated = (await cookies()).has(AUTH_COOKIE_NAME);
+
   return (
     <>
-      <MobileHeader cartCount={cartCount} />
+      <MobileHeader cartCount={cartCount} isAuthenticated={isAuthenticated} />
       <header className="hidden border-b border-line/40 md:block">
         <TopBar />
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 sm:px-6">

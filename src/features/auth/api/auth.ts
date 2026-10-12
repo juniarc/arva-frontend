@@ -25,3 +25,9 @@ export function login(input: LoginInput): Promise<AuthResult<AuthSuccessBody>> {
 export function register(input: SignupInput): Promise<AuthResult<AuthSuccessBody>> {
   return post("/api/auth/register", input);
 }
+
+/** Clears the auth cookie. Returns false only when the request itself failed. */
+export async function logout(): Promise<boolean> {
+  const result = await requestJson("/api/auth/logout", { method: "POST" });
+  return result.ok;
+}
