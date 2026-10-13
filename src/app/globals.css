@@ -21,6 +21,7 @@
   --color-promo: #f9d65c; /* yellow promo strips */
   --color-surface: #f5f5f5; /* sidebar card, image placeholders */
   --color-chip: #e0e0e0; /* unselected variant chip */
+  --color-sand: #f1e7a9; /* yellow shipping card on checkout */
 
   /* Modal animations (see AddToCartModal). Removed for reduced motion in the component classes. */
   --animate-fade-in: fade-in 200ms ease-out;

@@ -16,8 +16,8 @@ import { ShoppingSummary } from "./ShoppingSummary";
  * The cart screen. One component tree for every screen size: the pieces that differ
  * (summary card, bottom bar, back bar) are shown or hidden with Tailwind's `lg:` classes.
  */
-export function CartPage({ initialCart }: { initialCart: CartData }) {
-  const cart = useCartState(initialCart);
+export function CartPage({ initialCart, initialNotice }: { initialCart: CartData; initialNotice?: string }) {
+  const cart = useCartState(initialCart, initialNotice ? { variant: "error", message: initialNotice } : null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleConfirm = async () => {

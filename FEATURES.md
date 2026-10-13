@@ -39,15 +39,15 @@ A user can be a buyer and a seller at the same time. Sellers can buy from other 
 | 21 | Cart | Add to cart (with variant and quantity) | Buyer | Design pending | Figma: add to cart modal |
 | 22 | Cart | Cart page and cart drawer | Buyer | In progress (cart page at /cart; the drawer already exists) | Figma: cart |
 | 23 | Wishlist | Add and remove wishlist items | Buyer | In progress (/wishlist page and removal, and the heart on the product page; cart-row hearts and product cards are not connected yet) | Figma: wishlist |
-| 24 | Checkout | Shipment: address and shipping option | Buyer | Design pending | Figma: shipment, address, shipping modal |
+| 24 | Checkout | Shipment: address and shipping option | Buyer | In progress (/checkout: address, shipping) | Figma: shipment, address, shipping modal |
 | 25 | Checkout | Buy now (single product, skips the cart) | Buyer | Design pending | Figma: buy now |
-| 26 | Checkout | Vouchers at checkout | Buyer | Design pending | Figma: voucher modal |
-| 27 | Checkout | Payment method selection | Buyer | Design pending | Figma: payment modal |
-| 28 | Checkout | Place order and confirmation | Buyer | Design pending | Figma: success modal |
+| 26 | Checkout | Vouchers at checkout | Buyer | In progress (/checkout: vouchers modal) | Figma: voucher modal |
+| 27 | Checkout | Payment method selection | Buyer | In progress (/checkout: payment method modal) | Figma: payment modal |
+| 28 | Checkout | Place order and confirmation | Buyer | In progress (order received modal; the order endpoint answers 503 until payments exist) | Figma: success modal |
 | 29 | Checkout | Payment provider integration | Buyer | Parked (decide after main features) | None |
 | 30 | Orders | Order history and order status | Buyer | Design pending | Figma: order history |
 | 31 | Orders | Seller order management | Seller | Not started | Not in design yet |
-| 32 | Profile | View and edit profile, address | Buyer | Design pending | Not in design yet |
+| 32 | Profile | View and edit profile, address | Buyer | In progress (/profile: info and address sections; photo upload UI is there, its endpoint is not built yet) | Figma: My Profile |
 
 ## Build order
 

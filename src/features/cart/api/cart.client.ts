@@ -1,3 +1,4 @@
+import { createDraft } from "@/features/checkout/api/checkout.client";
 import { messageFromBody } from "@/lib/api/error-message";
 import { requestJson } from "@/lib/api/http";
 import { parseCart } from "../mappers/cart.mapper";
@@ -45,10 +46,10 @@ export function removeItems(itemIds: string[]): Promise<CartResult> {
   return send("DELETE", "/api/cart/items", { itemIds }, REMOVE_FAILED);
 }
 
-export type BuyResult = { ok: false; message: string };
+export type BuyResult = { ok: true } | { ok: false; message: string };
 
-/** Stub: checkout is not built yet. The checkout feature replaces this with the real call. */
+/** POST /api/checkout: creates the checkout draft from the selected cart items. The caller then opens /checkout. */
 export async function buyNow(itemIds: string[]): Promise<BuyResult> {
-  void itemIds;
-  return { ok: false, message: "Checkout is coming soon." };
+  const result = await createDraft(itemIds);
+  return result.ok ? { ok: true } : { ok: false, message: result.message };
 }

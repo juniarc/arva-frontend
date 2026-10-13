@@ -9,7 +9,7 @@ export type HttpResult<T> =
   | { ok: false; reason: "http"; status: number; body: unknown };
 
 interface RequestOptions {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   headers?: Record<string, string>;
   timeoutMs?: number;
@@ -24,16 +24,18 @@ export async function requestJson<T = unknown>(
   { method = "GET", body, headers, timeoutMs = DEFAULT_TIMEOUT_MS, revalidateSeconds }: RequestOptions = {},
 ): Promise<HttpResult<T>> {
   let response: Response;
+  // A file upload is sent as multipart: fetch sets the Content-Type (with its boundary) itself.
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
 
   try {
     response = await fetch(url, {
       method,
       headers: {
         Accept: "application/json",
-        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(body !== undefined && !isForm ? { "Content-Type": "application/json" } : {}),
         ...headers,
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
       ...(revalidateSeconds === undefined
         ? { cache: "no-store" as const }
         : { next: { revalidate: revalidateSeconds } }),

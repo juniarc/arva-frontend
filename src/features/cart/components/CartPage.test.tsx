@@ -5,8 +5,9 @@ import { buyNow, removeItems, updateQuantity } from "../api/cart.client";
 import { makeCart, makeCartItem } from "../cart.fixture";
 import { CartPage } from "./CartPage";
 
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ back: vi.fn(), push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ back: vi.fn(), push, replace: vi.fn(), refresh: vi.fn() }),
 }));
 vi.mock("../api/cart.client", () => ({
   updateQuantity: vi.fn(),
@@ -281,16 +282,34 @@ describe("CartPage", () => {
     expect(await screen.findByText("Your cart is empty")).toBeInTheDocument();
   });
 
-  it("shows 'Checkout is coming soon.' when Buy is pressed", async () => {
+  it("creates the checkout draft for the selected items and opens /checkout when Buy is pressed", async () => {
     const user = userEvent.setup();
-    buyMock.mockResolvedValue({ ok: false, message: "Checkout is coming soon." });
+    buyMock.mockResolvedValue({ ok: true });
     render(<CartPage initialCart={cart} />);
 
     await check(user, "Select item Banana");
     await user.click(screen.getAllByRole("button", { name: "Buy (1)" })[0]!);
 
     expect(buyMock).toHaveBeenCalledWith(["a1"]);
-    expect(await screen.findByRole("alert")).toHaveTextContent("Checkout is coming soon.");
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/checkout"));
+  });
+
+  it("stays on the cart and shows the error when the checkout cannot be started", async () => {
+    const user = userEvent.setup();
+    buyMock.mockResolvedValue({ ok: false, message: "Could not start checkout. Please try again." });
+    render(<CartPage initialCart={cart} />);
+
+    await check(user, "Select item Banana");
+    await user.click(screen.getAllByRole("button", { name: "Buy (1)" })[0]!);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not start checkout. Please try again.");
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("shows a notice passed by another page", () => {
+    render(<CartPage initialCart={cart} initialNotice="Your checkout session has expired. Please select your items again." />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Your checkout session has expired.");
   });
 
   it("toggles the heart without calling an API", async () => {

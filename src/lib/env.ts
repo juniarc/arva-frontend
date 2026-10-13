@@ -3,6 +3,8 @@ import { z } from "zod";
 
 const envSchema = z.object({
   API_BASE_URL: z.string().url(),
+  /** Public Indonesian region lists (provinces to villages) for the address form. */
+  REGIONS_API_BASE_URL: z.string().url().default("https://wilayah.id"),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -19,6 +21,8 @@ export function getEnv(): Env {
 
   const result = envSchema.safeParse({
     API_BASE_URL: process.env.API_BASE_URL,
+    // An empty value in .env means "use the default".
+    REGIONS_API_BASE_URL: process.env.REGIONS_API_BASE_URL || undefined,
   });
 
   if (!result.success) {
@@ -26,6 +30,9 @@ export function getEnv(): Env {
     throw new Error(`Invalid or missing environment variables: ${names.join(", ")}`);
   }
 
-  cachedEnv = { API_BASE_URL: result.data.API_BASE_URL.replace(/\/+$/, "") };
+  cachedEnv = {
+    API_BASE_URL: result.data.API_BASE_URL.replace(/\/+$/, ""),
+    REGIONS_API_BASE_URL: result.data.REGIONS_API_BASE_URL.replace(/\/+$/, ""),
+  };
   return cachedEnv;
 }

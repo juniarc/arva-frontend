@@ -111,6 +111,36 @@ Reason: without that prop the card is unchanged. With it, the small cart icon is
 **The heart on the product page is connected to the wishlist API. The cart-row hearts and product cards are not.**
 Reason: `PurchaseProvider` calls `addToWishlist(product.id)` or `removeFromWishlist([entryId])` with an optimistic update, a rollback on failure, and a toast. The server tells the page whether the product is already saved (`getWishlistItemId(slug)`, one `GET /wishlist` that runs in parallel with the product load; any failure just leaves the heart empty). The cart-row hearts still only flip local state, and product cards on home and `/products` have no heart.
 
+**The checkout page (`/checkout`) uses only the real API, and only the draft's own address.**
+Reason: the draft holds a copy of the address. Saving in the address modal calls `PUT /api/checkout/address` and changes only the draft; checkout never calls a profile endpoint, so no other page's address changes. With no address the row says "Add your address" (and Pay Now stays disabled); with an address it is shown at once and the same modal edits it. Pay Now needs an address, a shipping option and a payment method, and a hint names what is missing.
+
+**The checkout page never calculates money.**
+Reason: every amount comes from `draft.summary` and is only formatted ("Rp 1.000"). After each change the whole draft is replaced from the server's answer. A quantity change goes to the cart (`PATCH /cart/items/:id`) and then loads the draft again, because the cart answers with a cart, not a draft. The design's own numbers do not add up (its lines do not sum to Rp 10.000), so none of them were copied.
+
+**Every checkout modal uses `components/ui/ModalShell.tsx`.**
+Reason: it is the shared bottom sheet (below 768px) or centered card (from 768px) with focus trap, Escape, focus return and scroll lock. The design draws centered cards on mobile too; the brief asks for a bottom sheet, so a bottom sheet it is. The "order received" modal has no X and ignores clicks outside.
+
+**The cart's Buy button now creates the checkout draft and opens `/checkout`.**
+Reason: `buyNow` in `features/cart/api/cart.client.ts` calls `POST /api/checkout`. The cart page also accepts `?notice=checkout_expired`, so the redirect from `/checkout` without a draft can show "Your checkout session has expired. Please select your items again." (known keys only).
+
+**`NEXT_PUBLIC_CHECKOUT_DEV_SUCCESS=true` shows the order-received modal without calling the backend.**
+Reason: payments do not exist yet, and the success screen still needs testing. The check includes `NODE_ENV !== "production"`, so the flag does nothing in a production build.
+
+**The address form's regions come from wilayah.id, not from our backend.**
+Reason: wilayah.id is a free, static JSON API of Indonesian provinces, regencies, districts and villages, so the backend does not need its own region tables. The browser still only calls our `/api/regions/...` routes; `features/checkout/api/regions.server.ts` fetches from wilayah.id (base URL in `REGIONS_API_BASE_URL`, default `https://wilayah.id`), accepts only well-formed codes, cleans stray spaces in names, and caches each list for a day because the data is static. A region id is its wilayah.id code, for example `31.71.07`, so the backend must treat region ids in the address as text codes, not numbers. Names are sent with the ids, so the address can be shown without another lookup.
+
+**The profile page (`/profile`) saves each section on its own.**
+Reason: Profile Info and Address have their own Edit, Cancel and Save, as in the design, and each calls its own endpoint (`PUT /api/profile`, `PUT /api/profile/address`). One Save for both would mix two requests that can fail separately. Only one save runs at a time (the other section waits), so two answers can never cross. Every answer is the full profile and replaces the page's copy. The form exists only in edit mode, so Cancel discards what was typed without any request.
+
+**The profile address is separate from the checkout draft's address.**
+Reason: checkout copies the profile address when a draft is created and never writes to the profile; the profile page never calls a checkout endpoint. The profile address has no label, recipient name or phone, which checkout requires, so the backend must fill them when it copies (for example the user's name and phone). Phone formats also differ: the profile allows an optional leading "+" and 8 to 15 digits (as in the design, `+6123123132123`), checkout allows digits only. The profile rule was used here; the backend should strip the "+" when it copies.
+
+**Mobile rows show the label on the left and the value on the right, in both modes.**
+Reason: the brief says "label above value" in read mode, but the mobile design draws them side by side. The design wins. In edit mode the address fields are ordered street, province, city, district, sub-district, zip code (so each select can wait for the one above it); read mode keeps the design's order (street, sub-district, district, city, province, zip code). Desktop labels ("State" for the district, "City" for the province) did not match their values, so the region hierarchy is used for both layouts.
+
+**Profile photo: the UI is built, the endpoint is not.**
+Reason: `PUT /api/profile/photo` comes in a later backend task. The page checks type (JPG, PNG, WebP) and size (2 MB) before sending, shows a preview, and when the call fails (404 today) it removes the preview and shows "Profile update failed. Please try again." The file goes as multipart, in a field named `photo`.
+
 ## Open questions
 
 - Payments provider (decide after the main features are done).

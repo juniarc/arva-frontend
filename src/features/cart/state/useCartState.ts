@@ -19,10 +19,10 @@ export interface CartNotice {
  * Quantity changes are optimistic and batched (see useQuantityUpdates). Removals wait for the server.
  * The server's cart is the source of truth: once everything has settled, its answer replaces ours.
  */
-export function useCartState(initialCart: CartData) {
+export function useCartState(initialCart: CartData, initialNotice: CartNotice | null = null) {
   const router = useRouter();
   const [state, dispatch] = useReducer(cartReducer, initialCart, createInitialState);
-  const [notice, setNotice] = useState<CartNotice | null>(null);
+  const [notice, setNotice] = useState<CartNotice | null>(initialNotice);
   const [clearing, setClearing] = useState(false);
   const [wishlisted, setWishlisted] = useState<ReadonlySet<string>>(new Set());
 
@@ -91,6 +91,10 @@ export function useCartState(initialCart: CartData) {
     if (!canBuy(count)) return;
     setNotice(null);
     const result = await buyNow([...state.selected]);
+    if (result.ok) {
+      router.push("/checkout");
+      return;
+    }
     setNotice({ variant: "error", message: result.message });
   };
 
