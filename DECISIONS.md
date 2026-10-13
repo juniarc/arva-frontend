@@ -81,6 +81,21 @@ Reason: the global header already has search, cart and menu, and the product pag
 **The wishlist heart on the cart is UI only.**
 Reason: the wishlist API does not exist yet. All heart toggles go through `toggleWishlist()` in `features/cart/wishlist.ts`. Buy is a stub (`buyNow` in `cart.client.ts`) that shows "Checkout is coming soon." until the checkout feature starts.
 
+**The products page (`/products`) keeps all its state in the URL.**
+Reason: `parseProductsQuery()` (`features/products/query/products-query.ts`) validates every key with zod and drops what is invalid (an unknown category slug is dropped in `page.tsx`, once the category list is loaded). Any filter or sort change goes back to page 1. Refresh, back and shared links work. The page is a Server Component; the results load inside a `<Suspense key>` so the filters stay on screen and a skeleton shows while a new filter loads. A page number past the end redirects to the last page.
+
+**The page size is 12 on every screen size.**
+Reason: the server cannot know the screen size, and "page 2" in a shared link must be the same products everywhere. Filtering or slicing on the client is not an option (totals and pages come from the server). 12 fills whole rows in every grid: 2 x 6 (mobile), 3 x 4 (tablet), 4 x 3 (desktop).
+
+**"Most Suitable" sends no `sort`; "Most Popular" sends `sort=popular`.**
+Reason: the backend default is `popular`, so the two give the same order. The backend now accepts `sort=relevance` too, but it returns the same order, so nothing is sent until relevance is real.
+
+**The unfiltered product list is cached for 60 seconds; a query with filters, a sort or a search is not.**
+Reason: the default list is the same for everyone and is the most visited. A filtered result must never be stale, and the number of possible combinations is large.
+
+**The Location filter sends the stored city value ("Jakarta"), and shows "DKI Jakarta".**
+Reason: the backend matches `city` exactly, and the seeded shops have the city "Jakarta". `constants/cities.ts` holds the value and label pairs.
+
 ## Open questions
 
 - Payments provider (decide after the main features are done).

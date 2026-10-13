@@ -151,7 +151,8 @@ Catalog and cart (the full contract lives in the backend repo, `arva-backend/CLA
   - `PATCH /cart/items/:id`, body `{ quantity: 1..99 }`. 200: the full cart. 409 `{ code: "INSUFFICIENT_STOCK", message }` when above stock. 404 when the item is not in the user's cart.
   - `DELETE /cart/items`, body `{ itemIds: string[] }` (1 to 100). 200: the full cart after removal.
   - The browser calls our own `PATCH /api/cart/items/[id]` and `DELETE /api/cart/items`, which forward the token from the httpOnly cookie.
-- Not used yet: `GET /products` for a full product list page and `GET /shops/:slug`.
+- Products page (`/products`): `GET /products?category=&sort=&discount=&minPrice=&maxPrice=&minRating=&city=&page=&limit=`. Send only values that are set. `minRating` is a whole number 1 to 5, `city` matches the stored city exactly (for example "Jakarta", "Kab. Bogor"), and a bad value returns 400 with `errors`. A list item has `shopSlug` and `shopName`. The page size is 12.
+- Not used yet: `GET /shops/:slug`.
 
 Planned endpoint groups (no contract yet): `/products`, `/categories`, `/shops`, `/shops/me`, `/products/mine`, `/cart`, `/wishlist`, `/orders`, `/vouchers`, `/reviews`. Each group gets a contract here before its feature begins.
 
