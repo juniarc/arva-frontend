@@ -26,7 +26,7 @@ async function fetchCatalog<S extends z.ZodTypeAny>(
   revalidateSeconds?: number,
 ): Promise<z.infer<S> | undefined> {
   const result = await requestJson(`${getEnv().API_BASE_URL}${path}`, { revalidateSeconds });
-
+  console.log(getEnv().API_BASE_URL + path)
   if (!result.ok) {
     logServerError("catalog.request_failed", { endpoint: path, status: result.status, reason: result.reason });
     return undefined;

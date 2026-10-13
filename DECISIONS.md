@@ -63,6 +63,24 @@ Reason: the backend now returns images, shop details, rating counts, reviews, sh
 
 **Alert is one component for success and error messages.** Success is mint with no border; error has a 1px red border. Error text uses `danger-strong` instead of `danger` so it stays readable (AA) on the soft red background.
 
+**The cart page (`/cart`) uses only the real API and lives in the `(site)` route group.**
+Reason: `app/(site)/cart/page.tsx` is a Server Component. It calls `requireUser()` (cookie, then `GET /auth/me`; no cookie or a 401 redirects to `/login?redirect=%2Fcart`), loads the cart with `loadCart(token)`, and passes it to the client `CartPage`. The client never fetches the cart on load. Quantity changes and removals go through our own `/api/cart/items` routes; after each success the server's full cart replaces the client's, so totals always come from the backend. The unused `(main)/cart` placeholder was removed.
+
+**Cart items are grouped by `product.shop.slug`.**
+Reason: the shop name alone is not unique. The mapper rejects a response without `product.shop`.
+
+**Items are removed with "Clear", or with "-" at quantity 1.**
+Reason: the Figma cart has no delete button. Clear removes the selected items after a confirmation. At quantity 1 the "-" button becomes a trash icon (aria-label "Remove item") and removes that one item at once, without a confirmation (requested by the product owner). Both use `DELETE /cart/items`, and nothing changes on screen until the server confirms. Out-of-stock items cannot be selected, so "-" is the way to remove them.
+
+**Nothing is selected when the cart page opens.**
+Reason: the design does not say. Selecting nothing avoids buying something by accident. Out-of-stock items cannot be selected.
+
+**On mobile and tablet the cart adds only a slim back bar under the global header.**
+Reason: the global header already has search, cart and menu, and the product page also leaves it unchanged. The bottom checkout bar is `sticky` (like the product page's action bar), so it never covers the footer and needs no extra bottom padding.
+
+**The wishlist heart on the cart is UI only.**
+Reason: the wishlist API does not exist yet. All heart toggles go through `toggleWishlist()` in `features/cart/wishlist.ts`. Buy is a stub (`buyNow` in `cart.client.ts`) that shows "Checkout is coming soon." until the checkout feature starts.
+
 ## Open questions
 
 - Payments provider (decide after the main features are done).

@@ -13,7 +13,10 @@ export const cartSchema = z.object({
         slug: z.string(),
         name: z.string(),
         imageUrl: z.string(),
-        shopName: z.string(),
+        /** Items are grouped by shop slug. */
+        shop: z.object({ slug: z.string(), name: z.string() }),
+        /** Older field, still sent by the backend next to `shop`. */
+        shopName: z.string().optional(),
       }),
       variant: z.object({
         id,
@@ -32,6 +35,16 @@ export const cartSchema = z.object({
 export const addToCartRequestSchema = z.object({
   variantId: z.string().min(1),
   quantity: z.number().int().min(1).max(99),
+});
+
+/** Body our own PATCH /api/cart/items/[id] accepts. */
+export const updateQuantityRequestSchema = z.object({
+  quantity: z.number().int().min(1).max(99),
+});
+
+/** Body our own DELETE /api/cart/items accepts. */
+export const removeItemsRequestSchema = z.object({
+  itemIds: z.array(z.string().min(1)).min(1).max(100),
 });
 
 export type Cart = z.infer<typeof cartSchema>;

@@ -37,7 +37,7 @@ A user can be a buyer and a seller at the same time. Sellers can buy from other 
 | 19 | Seller | Tags | Seller | Design pending | Figma: tag modal |
 | 20 | Seller | Vouchers and discounts | Seller | Design pending | Figma: voucher section |
 | 21 | Cart | Add to cart (with variant and quantity) | Buyer | Design pending | Figma: add to cart modal |
-| 22 | Cart | Cart page and cart drawer | Buyer | Design pending | Figma: cart |
+| 22 | Cart | Cart page and cart drawer | Buyer | In progress (cart page at /cart; the drawer already exists) | Figma: cart |
 | 23 | Wishlist | Add and remove wishlist items | Buyer | Design pending | Figma: wishlist |
 | 24 | Checkout | Shipment: address and shipping option | Buyer | Design pending | Figma: shipment, address, shipping modal |
 | 25 | Checkout | Buy now (single product, skips the cart) | Buyer | Design pending | Figma: buy now |

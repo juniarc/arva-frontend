@@ -146,7 +146,12 @@ Catalog and cart (the full contract lives in the backend repo, `arva-backend/CLA
 - `GET /products/:slug/reviews?page=&limit=`: more reviews. The "Load more reviews" button reads it through our own `GET /api/products/[slug]/reviews` route.
 - `GET /products?shop=&exclude=&sort=&limit=` ("Products from this shop") and `GET /products/recommended?exclude=&excludeShop=&limit=` ("Recommendation for you").
 - `GET /cart` and `POST /cart` (Bearer token): the header reads the cart for the badge and drawer; the modal adds through our own `POST /api/cart` route, which forwards the token from the httpOnly cookie.
-- Not used yet: `GET /products` for a full product list page, `GET /shops/:slug` and `GET /auth/me`.
+- `GET /auth/me` (Bearer token): `requireUser()` in `lib/auth/` calls it on the cart page to confirm the session. 401 means "log in again".
+- Cart page (`/cart`). `GET /cart` items include `product.shop: { slug, name }`; items are grouped by `shop.slug`.
+  - `PATCH /cart/items/:id`, body `{ quantity: 1..99 }`. 200: the full cart. 409 `{ code: "INSUFFICIENT_STOCK", message }` when above stock. 404 when the item is not in the user's cart.
+  - `DELETE /cart/items`, body `{ itemIds: string[] }` (1 to 100). 200: the full cart after removal.
+  - The browser calls our own `PATCH /api/cart/items/[id]` and `DELETE /api/cart/items`, which forward the token from the httpOnly cookie.
+- Not used yet: `GET /products` for a full product list page and `GET /shops/:slug`.
 
 Planned endpoint groups (no contract yet): `/products`, `/categories`, `/shops`, `/shops/me`, `/products/mine`, `/cart`, `/wishlist`, `/orders`, `/vouchers`, `/reviews`. Each group gets a contract here before its feature begins.
 
