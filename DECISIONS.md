@@ -141,6 +141,30 @@ Reason: the brief says "label above value" in read mode, but the mobile design d
 **Profile photo: the UI is built, the endpoint is not.**
 Reason: `PUT /api/profile/photo` comes in a later backend task. The page checks type (JPG, PNG, WebP) and size (2 MB) before sending, shows a preview, and when the call fails (404 today) it removes the preview and shows "Profile update failed. Please try again." The file goes as multipart, in a field named `photo`.
 
+**The shop page (`/shops/[slug]`) is one page for everyone; the backend decides who is the owner.**
+Reason: the page sends the token (if there is one) to `GET /shops/:slug` and shows owner controls only when the answer says `isOwner: true` and carries `ownerDetails`. The mapper also drops `ownerDetails` when `isOwner` is false, so a wrong answer cannot show private data. A token the backend refuses (401) is retried as a guest; the page never redirects to login. The shop's email, phone and address are private: only the owner sees them (backend question: should a contact email or phone ever be public?).
+
+**Shop owner product list, and what is not built.**
+Reason: add, edit and delete product, and the create-shop wizard, are separate tasks. "+ Add New Product", "Edit Product" and delete are rendered disabled with the tooltip "Coming soon." (and the same words for screen readers); `/my-shop/create` is a placeholder. The owner list shows no unit after stock and sold, because `manage` has no unit. The owner row shows the category name and variant labels exactly as the backend sends them.
+
+**Public shop mobile layout is an assumption.**
+Reason: the design has only desktop for the public page. Mobile and tablet use: back bar, logo and name (then the city), a dark green box with rating and hours side by side, description, products grid (2 columns, 3 on tablet, 4 from 1024px, 8 per page). The owner sections stack under the description on every breakpoint. The shop edit form follows the mobile design (one column, sticky Cancel and Save bar) and two columns from 1024px.
+
+**Shop edit uses Cancel and Save, checkboxes for shipping channels, and HH:MM hours.**
+Reason: the design's Back and Next belong to the create wizard; this form edits an existing shop. A shop can ship with several channels, so channels are checkboxes, not radio buttons. Hours are `HH:MM` in the form and in storage ("09:00 - 19:00" on screen); overnight hours are not supported (closing must be later than opening). The zip code is not part of the edit form or its request, so it cannot be changed here.
+
+**Navbar and routes.**
+Reason: the desktop header has no "My Shop" link, and the mobile menu's "My Shop" points to `/shop`. The navbar was not changed. `/shop` now redirects to `/my-shop`, and `/my-shop` is in the protected route list. The Pagination component got an optional `hrefFor` prop so the shop page can reuse it with `/shops/[slug]?page=n` links.
+
+**The create-shop wizard (`/my-shop/create`) creates the shop at the end of step 2; step 3 is not built.**
+Reason: the design has three steps (Identity Verification, Shop Information, Upload Product), but uploading a product needs product endpoints and image upload that do not exist yet. Step 2's Next calls `POST /api/shops` and step 3 then says "Adding products is coming soon." and links to the new shop. Both steps keep their values when the user goes Back, and a server message about an identity field sends the user back to step 1. A user who already has a shop is sent to it (one shop per user).
+
+**Wizard assumptions that came from no written contract.**
+Reason: the IC number (KTP) is checked as exactly 16 digits (the real NIK length; the design's sample has fewer). The agreement checkbox must be checked, and "Terms & Conditions" looks like a link but is plain text because there is no such page. The design's banner "Please complete the requires field." is written "Please complete the required fields." Opening hours start at 09:00 and 17:00. The identity (name, IC number, agreement) is checked in the form but not sent, because the backend's create endpoint rejects fields it does not know; the IC number is never logged or put in browser storage and is cleared from the form after the shop is created. `POST /api/shops` sends only the shop's fields.
+
+**Shop region ids go to the backend as numeric strings.**
+Reason: the backend validates them as numeric ("City id must be a numeric string."), while the region lists from wilayah.id use dotted codes. The shop forms remove the dots when sending (`31.71.07` is `317107`) and put them back when loading a saved shop, so the saved regions can be chosen again. The part sizes are fixed (2, 2, 2 and 4 digits), so nothing is lost. The profile and checkout address forms still send the dotted codes.
+
 ## Open questions
 
 - Payments provider (decide after the main features are done).

@@ -23,6 +23,15 @@ describe("getPageItems", () => {
   });
 });
 
+describe("Pagination with its own links", () => {
+  it("uses the given link for each page (for pages other than the products page)", () => {
+    render(<Pagination hrefFor={(page) => `/shops/farm?page=${page}`} currentPage={2} totalPages={3} />);
+
+    expect(screen.getByRole("link", { name: "Page 3" })).toHaveAttribute("href", "/shops/farm?page=3");
+    expect(screen.getByRole("link", { name: "Previous page" })).toHaveAttribute("href", "/shops/farm?page=1");
+  });
+});
+
 describe("Pagination", () => {
   it("marks the current page and links the others, keeping the filters", () => {
     render(<Pagination query={{ category: "fruits", discount: true, page: 2 }} currentPage={2} totalPages={3} />);

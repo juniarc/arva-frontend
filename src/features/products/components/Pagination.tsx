@@ -6,17 +6,20 @@ import { buildProductsHref, withPage, type ProductsQuery } from "../query/produc
 const CELL =
   "flex size-11 items-center justify-center rounded-sm text-xs focus-visible:outline-2 focus-visible:outline-info lg:size-8";
 
-interface PaginationProps {
-  query: ProductsQuery;
+type PaginationProps = {
   currentPage: number;
   totalPages: number;
-}
+} & (
+  | { query: ProductsQuery; hrefFor?: never }
+  /** For pages that are not the products page (for example a shop): the link for a page number. */
+  | { hrefFor: (page: number) => string; query?: never }
+);
 
 /** Links only, so it works without JavaScript. Every link keeps the other filters in the URL. */
-export function Pagination({ query, currentPage, totalPages }: PaginationProps) {
+export function Pagination({ query, hrefFor: customHrefFor, currentPage, totalPages }: PaginationProps) {
   if (totalPages <= 1) return null;
 
-  const hrefFor = (page: number) => buildProductsHref(withPage(query, page));
+  const hrefFor = (page: number) => (customHrefFor ? customHrefFor(page) : buildProductsHref(withPage(query ?? { page: 1 }, page)));
   const hasPrevious = currentPage > 1;
   const hasNext = currentPage < totalPages;
 

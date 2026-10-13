@@ -7,7 +7,7 @@
  */
 export const PUBLIC_ROUTES = ["/", "/login", "/signup", "/forgot-password", "/search", "/api/auth"];
 
-export const PROTECTED_ROUTES = ["/wishlist", "/cart", "/profile", "/checkout", "/shop"];
+export const PROTECTED_ROUTES = ["/wishlist", "/cart", "/profile", "/checkout", "/shop", "/my-shop"];
 
 function matchesRoute(pathname: string, route: string): boolean {
   return pathname === route || pathname.startsWith(`${route}/`);

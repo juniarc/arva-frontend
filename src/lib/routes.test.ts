@@ -5,6 +5,12 @@ describe("route lists", () => {
   it("protects listed routes and their children", () => {
     expect(isProtectedRoute("/cart")).toBe(true);
     expect(isProtectedRoute("/profile/settings")).toBe(true);
+    expect(isProtectedRoute("/my-shop")).toBe(true);
+    expect(isProtectedRoute("/my-shop/edit")).toBe(true);
+  });
+
+  it("keeps the public shop page open to guests", () => {
+    expect(isProtectedRoute("/shops/bali-fresh-farm")).toBe(false);
   });
 
   it("does not protect public routes", () => {
