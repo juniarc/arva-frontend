@@ -6,9 +6,37 @@ import { SafeImage } from "@/components/ui/SafeImage";
 import { formatSold } from "@/lib/format";
 import type { Product } from "../types";
 import { AddToCartButton } from "./AddToCartButton";
+import { WishlistCardActions } from "./WishlistCardActions";
+
+interface ProductCardProps {
+  product: Product;
+  isLoggedIn?: boolean;
+  /**
+   * Turns on wishlist mode: a heart and a wide "Add To Cart" button replace the small cart icon.
+   * Leave it out and the card is the normal one, and the props below are ignored.
+   */
+  wishlistState?: "none" | "in-wishlist";
+  onWishlistClick?: () => void;
+  /** Wishlist mode: the page decides what happens (it opens the add-to-cart modal). */
+  onAddToCartClick?: () => void;
+  /** Wishlist mode: set to false to hide the heart. */
+  showWishlistButton?: boolean;
+  /** Wishlist mode: disables "Add To Cart" and shows "Out of stock". */
+  outOfStock?: boolean;
+}
 
 /** Generic product card. The whole card is clickable through the stretched name link. */
-export function ProductCard({ product, isLoggedIn = false }: { product: Product; isLoggedIn?: boolean }) {
+export function ProductCard({
+  product,
+  isLoggedIn = false,
+  wishlistState,
+  onWishlistClick,
+  onAddToCartClick,
+  showWishlistButton = true,
+  outOfStock = false,
+}: ProductCardProps) {
+  const wishlistMode = wishlistState !== undefined;
+
   return (
     <article className="relative flex h-full flex-col overflow-hidden rounded-md border border-line/30 bg-white transition-shadow hover:shadow-md">
       <div className="relative aspect-[4/3] bg-surface">
@@ -50,8 +78,18 @@ export function ProductCard({ product, isLoggedIn = false }: { product: Product;
               {product.city}
             </p>
           </div>
-          <AddToCartButton product={product} isLoggedIn={isLoggedIn} />
+          {!wishlistMode && <AddToCartButton product={product} isLoggedIn={isLoggedIn} />}
         </div>
+
+        {wishlistMode && (
+          <WishlistCardActions
+            wishlistState={wishlistState}
+            showWishlistButton={showWishlistButton}
+            outOfStock={outOfStock}
+            onWishlistClick={onWishlistClick}
+            onAddToCartClick={onAddToCartClick}
+          />
+        )}
       </div>
     </article>
   );

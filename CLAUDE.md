@@ -152,6 +152,11 @@ Catalog and cart (the full contract lives in the backend repo, `arva-backend/CLA
   - `DELETE /cart/items`, body `{ itemIds: string[] }` (1 to 100). 200: the full cart after removal.
   - The browser calls our own `PATCH /api/cart/items/[id]` and `DELETE /api/cart/items`, which forward the token from the httpOnly cookie.
 - Products page (`/products`): `GET /products?category=&sort=&discount=&minPrice=&maxPrice=&minRating=&city=&page=&limit=`. Send only values that are set. `minRating` is a whole number 1 to 5, `city` matches the stored city exactly (for example "Jakarta", "Kab. Bogor"), and a bad value returns 400 with `errors`. A list item has `shopSlug` and `shopName`. The page size is 12.
+- Wishlist page (`/wishlist`), all need the Bearer token. The backend endpoints are built in a separate task; until then the page shows its error page.
+  - `GET /wishlist`: `{ items: [{ id, addedAt, product: { id, slug, name, categorySlug, categoryName, price, originalPrice, discountPercent, rating, soldCount, city, imageUrl, shop: { slug, name }, isAvailable } }], itemCount }`, newest first. `id` is the wishlist entry id.
+  - `POST /wishlist`, body `{ productId }` (numeric string). Idempotent. 200: the full wishlist. 404 `{ message }` for an unknown or inactive product.
+  - `DELETE /wishlist/items`, body `{ itemIds }` (1 to 100 numeric strings of wishlist entry ids). Ids of other users are ignored. 200: the full wishlist. 400 for an empty list or a non-numeric id.
+  - The browser calls our own `GET` and `POST /api/wishlist` and `DELETE /api/wishlist/items`, which forward the token from the httpOnly cookie.
 - Not used yet: `GET /shops/:slug`.
 
 Planned endpoint groups (no contract yet): `/products`, `/categories`, `/shops`, `/shops/me`, `/products/mine`, `/cart`, `/wishlist`, `/orders`, `/vouchers`, `/reviews`. Each group gets a contract here before its feature begins.

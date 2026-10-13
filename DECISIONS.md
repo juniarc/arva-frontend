@@ -96,6 +96,21 @@ Reason: the default list is the same for everyone and is the most visited. A fil
 **The Location filter sends the stored city value ("Jakarta"), and shows "DKI Jakarta".**
 Reason: the backend matches `city` exactly, and the seeded shops have the city "Jakarta". `constants/cities.ts` holds the value and label pairs.
 
+**The wishlist page (`/wishlist`) uses only the real API and lives in the `(site)` route group.**
+Reason: like the cart, `page.tsx` is a Server Component that calls `requireUser()`, loads the wishlist with `loadWishlist(token)`, and passes it to the client `WishlistPage`. The unused `(main)/wishlist` placeholder was removed. Removing is one item at a time, behind a confirmation dialog. It is optimistic: the card disappears when the user confirms and comes back at the same position if the request fails. On success the server's full wishlist replaces ours. The error text is fixed ("Wishlist Failed Removed. Please Try Again."); what the server said is never shown.
+
+**The removal dialog keeps the design's reversed buttons: "Delete" is outlined and "Cancel" is filled.**
+Reason: Figma shows it that way. Because Cancel looks like the main action, it also gets the initial focus. `components/ui/ConfirmDialog.tsx` is generic (title, labels, loading state); the cart's `ClearConfirmDialog` is not migrated to it because the cart design uses different button styles.
+
+**Add To Cart on the wishlist opens the existing AddToCartModal, and the item stays in the wishlist.**
+Reason: adding to the cart is not the same as giving up on a product. Removing it is the user's choice.
+
+**ProductCard has a wishlist mode, switched on by `wishlistState`.**
+Reason: without that prop the card is unchanged. With it, the small cart icon is replaced by a heart and a wide "Add To Cart" button (`outOfStock` disables it).
+
+**The heart on the product page is connected to the wishlist API. The cart-row hearts and product cards are not.**
+Reason: `PurchaseProvider` calls `addToWishlist(product.id)` or `removeFromWishlist([entryId])` with an optimistic update, a rollback on failure, and a toast. The server tells the page whether the product is already saved (`getWishlistItemId(slug)`, one `GET /wishlist` that runs in parallel with the product load; any failure just leaves the heart empty). The cart-row hearts still only flip local state, and product cards on home and `/products` have no heart.
+
 ## Open questions
 
 - Payments provider (decide after the main features are done).

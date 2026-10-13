@@ -2,27 +2,45 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProductDetail } from "./ProductDetail";
+import { makeProduct } from "@/features/home/components/home.fixture";
+import { makeWishlist, makeWishlistItem } from "@/features/wishlist/wishlist.fixture";
 import { makePageData, makeProductDetail } from "./product-page.fixture";
 
-const { push, refresh, addToCartMock } = vi.hoisted(() => ({
+const { push, refresh, addToCartMock, addToWishlistMock, removeFromWishlistMock } = vi.hoisted(() => ({
   push: vi.fn(),
   refresh: vi.fn(),
   addToCartMock: vi.fn(),
+  addToWishlistMock: vi.fn(),
+  removeFromWishlistMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, refresh, back: vi.fn() }) }));
 vi.mock("@/features/cart/api/add-to-cart", () => ({ addToCart: addToCartMock }));
+vi.mock("@/features/wishlist/api/wishlist.client", () => ({
+  addToWishlist: addToWishlistMock,
+  removeFromWishlist: removeFromWishlistMock,
+}));
 
 beforeEach(() => {
   push.mockReset();
   refresh.mockReset();
   addToCartMock.mockReset();
   addToCartMock.mockResolvedValue({ ok: true });
+  addToWishlistMock.mockReset();
+  removeFromWishlistMock.mockReset();
 });
 
-function renderPage(options: { isLoggedIn?: boolean; data?: ReturnType<typeof makePageData> } = {}) {
-  const { isLoggedIn = true, data = makePageData() } = options;
-  render(<ProductDetail data={data} isLoggedIn={isLoggedIn} />);
+/** What the backend answers after the current product was added: it is entry "77". */
+function wishlistWithThisProduct() {
+  const productId = makePageData().product.id;
+  return makeWishlist([makeWishlistItem(1, { id: "77", product: makeProduct(1, { id: productId }) })]);
+}
+
+function renderPage(
+  options: { isLoggedIn?: boolean; data?: ReturnType<typeof makePageData>; wishlistItemId?: string } = {},
+) {
+  const { isLoggedIn = true, data = makePageData(), wishlistItemId } = options;
+  render(<ProductDetail data={data} isLoggedIn={isLoggedIn} wishlistItemId={wishlistItemId} />);
   return { user: userEvent.setup(), panel: screen.getByRole("region", { name: "Purchase options" }) };
 }
 
@@ -179,11 +197,72 @@ describe("Guests", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("logged-in users can fill the heart", async () => {
+});
+
+describe("Wishlist heart", () => {
+  const heart = (name: string) => screen.getAllByRole("button", { name })[0] as HTMLElement;
+
+  it("guests are sent to login and no request is made", async () => {
+    const { user } = renderPage({ isLoggedIn: false });
+
+    await user.click(heart("Add to wishlist"));
+
+    expect(addToWishlistMock).not.toHaveBeenCalled();
+    expect(removeFromWishlistMock).not.toHaveBeenCalled();
+  });
+
+  it("sends the product id to the wishlist API, fills the heart, and says so", async () => {
+    addToWishlistMock.mockResolvedValue({ ok: true, wishlist: wishlistWithThisProduct() });
     const { user } = renderPage();
 
-    await user.click(screen.getAllByRole("button", { name: "Add to wishlist" })[0] as HTMLElement);
+    await user.click(heart("Add to wishlist"));
 
-    expect(screen.getAllByRole("button", { name: "Remove from wishlist" })[0]).toHaveAttribute("aria-pressed", "true");
+    expect(addToWishlistMock).toHaveBeenCalledWith(makePageData().product.id);
+    expect(heart("Remove from wishlist")).toHaveAttribute("aria-pressed", "true");
+    expect(await screen.findByText("Added to wishlist.")).toBeInTheDocument();
+  });
+
+  it("goes back to an empty heart and shows an error when adding fails", async () => {
+    addToWishlistMock.mockResolvedValue({ ok: false, message: "Wishlist Failed Added. Please Try Again." });
+    const { user } = renderPage();
+
+    await user.click(heart("Add to wishlist"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Wishlist Failed Added. Please Try Again.");
+    expect(heart("Add to wishlist")).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("starts filled when the product is already saved, and removes it by its wishlist entry id", async () => {
+    removeFromWishlistMock.mockResolvedValue({ ok: true, wishlist: makeWishlist([]) });
+    const { user } = renderPage({ wishlistItemId: "77" });
+    expect(heart("Remove from wishlist")).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(heart("Remove from wishlist"));
+
+    expect(removeFromWishlistMock).toHaveBeenCalledWith(["77"]);
+    expect(heart("Add to wishlist")).toHaveAttribute("aria-pressed", "false");
+    expect(await screen.findByText("Removed from wishlist.")).toBeInTheDocument();
+  });
+
+  it("keeps the heart filled and shows an error when removing fails", async () => {
+    removeFromWishlistMock.mockResolvedValue({ ok: false, message: "Wishlist Failed Removed. Please Try Again." });
+    const { user } = renderPage({ wishlistItemId: "77" });
+
+    await user.click(heart("Remove from wishlist"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Wishlist Failed Removed. Please Try Again.");
+    expect(heart("Remove from wishlist")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("can be removed again after being added in the same visit (uses the id from the add response)", async () => {
+    addToWishlistMock.mockResolvedValue({ ok: true, wishlist: wishlistWithThisProduct() });
+    removeFromWishlistMock.mockResolvedValue({ ok: true, wishlist: makeWishlist([]) });
+    const { user } = renderPage();
+
+    await user.click(heart("Add to wishlist"));
+    await screen.findByText("Added to wishlist.");
+    await user.click(heart("Remove from wishlist"));
+
+    expect(removeFromWishlistMock).toHaveBeenCalledWith(["77"]);
   });
 });

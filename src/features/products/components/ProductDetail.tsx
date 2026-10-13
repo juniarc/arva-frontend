@@ -17,6 +17,8 @@ interface ProductDetailProps {
   data: ProductPageData;
   /** From `isLoggedIn()` in lib/session.ts. */
   isLoggedIn: boolean;
+  /** The wishlist entry id when the product is already saved (see getWishlistItemId). */
+  wishlistItemId?: string;
 }
 
 /**
@@ -24,12 +26,12 @@ interface ProductDetailProps {
  * - below 1024px: gallery, info, then the sections; buying happens in the modal via the sticky bar.
  * - 1024px and up: gallery on the left, info and the inline purchase panel on the right.
  */
-export function ProductDetail({ data, isLoggedIn }: ProductDetailProps) {
+export function ProductDetail({ data, isLoggedIn, wishlistItemId }: ProductDetailProps) {
   const { product, shopProducts, recommended } = data;
   const { shop } = product;
 
   return (
-    <PurchaseProvider product={product} isLoggedIn={isLoggedIn}>
+    <PurchaseProvider product={product} isLoggedIn={isLoggedIn} initialWishlistItemId={wishlistItemId}>
       <div className="mx-auto max-w-300">
         <div className="lg:grid lg:grid-cols-[2fr_3fr] lg:gap-8 lg:px-6 lg:pt-6">
           <ProductGallery images={product.images} />

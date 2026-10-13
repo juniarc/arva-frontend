@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { ProductDetail } from "@/features/products/components/ProductDetail";
 import { getProductPage } from "@/features/products/data/product.loader";
+import { getWishlistItemId } from "@/features/wishlist/data/wishlist-status";
 import { isLoggedIn } from "@/lib/session";
 
 interface ProductPageProps {
@@ -33,8 +34,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const [data, loggedIn] = await Promise.all([loadProductPage(slug), isLoggedIn()]);
+  // The wishlist lookup runs at the same time as the product load. Guests get `undefined` without a request.
+  const [data, loggedIn, wishlistItemId] = await Promise.all([
+    loadProductPage(slug),
+    isLoggedIn(),
+    getWishlistItemId(slug),
+  ]);
   if (!data) notFound();
 
-  return <ProductDetail data={data} isLoggedIn={loggedIn} />;
+  return <ProductDetail data={data} isLoggedIn={loggedIn} wishlistItemId={wishlistItemId} />;
 }

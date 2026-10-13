@@ -2,11 +2,11 @@ import { z } from "zod";
 import { productSchema } from "./catalog.schema";
 
 /**
- * GET /products. A list item has the shop either as flat `shopSlug` / `shopName` (what the backend
- * sends today) or as `shop: { slug, name }` (what the written contract says). Both are accepted,
- * and product-list.mapper.ts turns them into one shape.
+ * GET /products, and the product inside a wishlist item. The shop is either flat `shopSlug` /
+ * `shopName` (what the backend sends today) or `shop: { slug, name }` (what the written contract
+ * says). Both are accepted, and product-list.mapper.ts turns them into one shape.
  */
-const listItemSchema = productSchema
+export const productListItemSchema = productSchema
   .omit({ shopSlug: true, shopName: true })
   .extend({
     shopSlug: z.string().optional(),
@@ -15,7 +15,7 @@ const listItemSchema = productSchema
   });
 
 export const productListPageSchema = z.object({
-  products: z.array(listItemSchema),
+  products: z.array(productListItemSchema),
   pagination: z.object({
     page: z.number().int(),
     limit: z.number().int(),
@@ -24,5 +24,5 @@ export const productListPageSchema = z.object({
   }),
 });
 
-export type ProductListItem = z.infer<typeof listItemSchema>;
+export type ProductListItem = z.infer<typeof productListItemSchema>;
 export type Pagination = z.infer<typeof productListPageSchema>["pagination"];
