@@ -1,9 +1,9 @@
 import { Plus } from "lucide-react";
+import { ButtonLink } from "@/components/ui/Button";
 import { Pagination } from "@/features/products/components/Pagination";
 import { ProductGrid } from "@/features/products/components/ProductGrid";
 import { hasManage } from "../mappers/shop-product.mapper";
 import type { ShopProductsResult } from "../data/shop.loader";
-import { ComingSoonButton } from "./ComingSoonButton";
 import { OwnerProductList } from "./OwnerProductList";
 
 export const PRODUCTS_UNAVAILABLE_MESSAGE = "Products are not available right now.";
@@ -16,12 +16,13 @@ interface ShopProductsProps {
   result: ShopProductsResult;
 }
 
-function AddProductButton({ id }: { id: string }) {
+/** Owner only: opens the product form. */
+function AddProductButton() {
   return (
-    <ComingSoonButton id={id} label="Add new product" className="bg-brand text-white">
-      <Plus className="mr-1 size-3" aria-hidden="true" />
+    <ButtonLink href="/my-shop/products/new" variant="brand" className="w-auto px-4 text-xs">
+      <Plus className="size-3" aria-hidden="true" />
       Add New Product
-    </ComingSoonButton>
+    </ButtonLink>
   );
 }
 
@@ -35,7 +36,7 @@ export function ShopProducts({ slug, isOwner, isLoggedIn, result }: ShopProducts
         <h2 id="shop-products-heading" className="font-serif text-xl font-bold text-ink lg:text-2xl">
           Products
         </h2>
-        {isOwner && <AddProductButton id="coming-soon-add-product" />}
+        {isOwner && <AddProductButton />}
       </div>
 
       {result.status === "error" ? (
@@ -43,7 +44,7 @@ export function ShopProducts({ slug, isOwner, isLoggedIn, result }: ShopProducts
       ) : result.products.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <p className="text-sm text-muted">{NO_PRODUCTS_MESSAGE}</p>
-          {isOwner && <AddProductButton id="coming-soon-add-first-product" />}
+          {isOwner && <AddProductButton />}
         </div>
       ) : (
         <>

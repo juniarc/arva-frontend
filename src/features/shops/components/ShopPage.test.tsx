@@ -23,7 +23,7 @@ function expectNoOwnerControls() {
   }
   expect(screen.queryByText("shop@example.com")).not.toBeInTheDocument();
   expect(screen.queryByText("Jl. Kebon Sirih No. 1")).not.toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: /add new product/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: /add new product/i })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /edit product/i })).not.toBeInTheDocument();
   expect(OWNER_ONLY.length).toBeGreaterThan(0);
 }
@@ -117,20 +117,21 @@ describe("ShopPage: who sees what", () => {
   });
 });
 
-describe("ShopPage: the disabled owner actions", () => {
-  it("+ Add New Product, Edit Product and delete are disabled, say Coming soon, and call nothing", () => {
+describe("ShopPage: the owner actions", () => {
+  it("+ Add New Product opens the product form", () => {
     render(<ShopPage shop={makeOwnerShop()} products={makeOwnerProducts()} isLoggedIn />);
 
-    const add = screen.getByRole("button", { name: "Add new product" });
-    const edit = screen.getByRole("button", { name: "Edit product Banana Fruits from Bali" });
-    const remove = screen.getByRole("button", { name: "Delete Banana Fruits from Bali" });
+    expect(screen.getByRole("link", { name: "Add New Product" })).toHaveAttribute("href", "/my-shop/products/new");
+  });
 
-    for (const button of [add, edit, remove]) {
-      expect(button).toBeDisabled();
-      expect(button).toHaveAccessibleDescription("Coming soon.");
-      expect(button.closest("[title]")).toHaveAttribute("title", "Coming soon.");
-      button.click();
-    }
+  it("Edit Product opens the edit page, and delete is available", () => {
+    render(<ShopPage shop={makeOwnerShop()} products={makeOwnerProducts()} isLoggedIn />);
+
+    expect(screen.getByRole("link", { name: "Edit Product Banana Fruits from Bali" })).toHaveAttribute(
+      "href",
+      "/my-shop/products/10/edit",
+    );
+    expect(screen.getByRole("button", { name: "Delete Banana Fruits from Bali" })).toBeEnabled();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
@@ -150,11 +151,11 @@ describe("ShopPage: the products section", () => {
     expect(screen.getByText(NO_PRODUCTS_MESSAGE)).toBeInTheDocument();
   });
 
-  it("an owner with no products sees the message and the disabled Add New Product button", () => {
+  it("an owner with no products sees the message and the Add New Product link", () => {
     render(<ShopPage shop={makeOwnerShop()} products={makeOwnerProducts([])} isLoggedIn />);
 
     expect(screen.getByText(NO_PRODUCTS_MESSAGE)).toBeInTheDocument();
-    for (const button of screen.getAllByRole("button", { name: "Add new product" })) expect(button).toBeDisabled();
+    for (const link of screen.getAllByRole("link", { name: "Add New Product" })) expect(link).toHaveAttribute("href", "/my-shop/products/new");
   });
 
   it("links the pages of the shop, keeping the shop's address", () => {

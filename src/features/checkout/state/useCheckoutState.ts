@@ -94,7 +94,9 @@ export function useCheckoutState(initialDraft: Draft) {
       return;
     }
     const comingSoon = result.status === 503 && result.code === "CHECKOUT_UNAVAILABLE";
-    dispatch({ type: "request/failure", key: "order", message: comingSoon ? "Checkout is coming soon." : ORDER_FAILED });
+    // A refused order (400, 409) says why, for example "Only 2 left of Banana.". The client never keeps a 5xx message.
+    const reason = result.status === 400 || result.status === 409 ? result.message : ORDER_FAILED;
+    dispatch({ type: "request/failure", key: "order", message: comingSoon ? "Checkout is coming soon." : reason });
   };
 
   return {

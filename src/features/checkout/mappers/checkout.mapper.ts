@@ -8,7 +8,9 @@ import {
   vouchersSchema,
   type DraftDto,
 } from "../schemas/checkout.schema";
-import type { Draft, Order, PaymentMethod, Region, ShippingOption, Voucher } from "../types";
+import { toNumericId, toRegionCode, type RegionCodeLevel } from "@/lib/region-code";
+import type { AddressInput, CheckoutAddressRequest } from "../schemas/address.schema";
+import type { Address, Draft, Order, PaymentMethod, Region, ShippingOption, Voucher } from "../types";
 
 /** The backend sent something the checkout page cannot use. */
 export class CheckoutMappingError extends Error {
@@ -22,6 +24,19 @@ function parse<S extends z.ZodTypeAny>(schema: S, data: unknown, what: string): 
   const result = schema.safeParse(data);
   if (!result.success) throw new CheckoutMappingError(`Unexpected ${what} response shape.`);
   return result.data;
+}
+
+/** The backend's numeric region id as the region lists' dotted code, so the saved region can be chosen again. */
+const regionFromBackend = (level: RegionCodeLevel, region: Region): Region => ({ id: toRegionCode(level, region.id), name: region.name });
+
+function toAddress(dto: NonNullable<DraftDto["address"]>): Address {
+  return {
+    ...dto,
+    province: regionFromBackend("province", dto.province),
+    city: regionFromBackend("city", dto.city),
+    district: regionFromBackend("district", dto.district),
+    subDistrict: regionFromBackend("subDistrict", dto.subDistrict),
+  };
 }
 
 export function toDraft(dto: DraftDto): Draft {
@@ -39,7 +54,7 @@ export function toDraft(dto: DraftDto): Draft {
       price: item.variant.price,
       stock: item.variant.stock,
     })),
-    address: dto.address,
+    address: dto.address ? toAddress(dto.address) : null,
     damageProtection: dto.damageProtection,
     shipping: dto.shipping,
     voucher: dto.voucher,
@@ -71,4 +86,18 @@ export function parseRegions(data: unknown): Region[] {
 
 export function parseOrder(data: unknown): Order {
   return parse(orderResponseSchema, data, "order").order;
+}
+
+/** The body for PUT /checkout/address: trimmed text, and region ids only, as numeric strings ("31.71" is "3171"). */
+export function toAddressRequest(address: AddressInput): CheckoutAddressRequest {
+  return {
+    label: address.label.trim(),
+    province: { id: toNumericId(address.province.id) },
+    city: { id: toNumericId(address.city.id) },
+    district: { id: toNumericId(address.district.id) },
+    subDistrict: { id: toNumericId(address.subDistrict.id) },
+    street: address.street.trim(),
+    recipientName: address.recipientName.trim(),
+    phone: address.phone,
+  };
 }

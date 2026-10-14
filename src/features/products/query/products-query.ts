@@ -8,6 +8,8 @@ import { SORT_VALUES, type SortValue } from "../constants/sort-options";
  */
 
 export interface ProductsFilters {
+  /** Search words from the header's search box. */
+  q?: string;
   /** A category slug. */
   category?: string;
   sort?: SortValue;
@@ -38,7 +40,11 @@ const wholeNumber = (max: number) =>
     .transform(Number)
     .pipe(z.number().int().min(0).max(max));
 
+export const MAX_SEARCH_LENGTH = 100;
+
 const fieldSchemas = {
+  // Trimmed; an empty search is no search.
+  q: z.string().transform((value) => value.trim().replace(/\s+/g, " ")).pipe(z.string().min(1).max(MAX_SEARCH_LENGTH)),
   category: z.string().regex(/^[a-z0-9-]{1,60}$/),
   sort: z.enum(SORT_VALUES),
   discount: z.literal("true").transform(() => true as const),
@@ -75,6 +81,7 @@ export function parseProductsQuery(raw: RawSearchParams): ProductsQuery {
   }
 
   return {
+    q: readField(raw, "q"),
     category: readField(raw, "category"),
     sort: readField(raw, "sort"),
     discount: readField(raw, "discount"),
@@ -101,14 +108,15 @@ export function withPage(query: ProductsQuery, page: number): ProductsQuery {
   return { ...query, page };
 }
 
-/** Removes every filter and the sort. */
-export function clearFilters(): ProductsQuery {
-  return { page: 1 };
+/** Removes every filter and the sort. The search stays: resetting filters is not a new search. */
+export function clearFilters(q?: string): ProductsQuery {
+  return q ? { q, page: 1 } : { page: 1 };
 }
 
 /** The filter fields that are set, in a fixed order. Used for both the URL and the API call. */
 function entries(query: ProductsQuery): [string, string][] {
   const result: [string, string][] = [];
+  if (query.q) result.push(["q", query.q]);
   if (query.category) result.push(["category", query.category]);
   if (query.sort) result.push(["sort", query.sort]);
   if (query.discount) result.push(["discount", "true"]);

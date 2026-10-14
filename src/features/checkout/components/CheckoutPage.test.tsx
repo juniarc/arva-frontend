@@ -30,6 +30,17 @@ beforeEach(() => {
 });
 
 type User = ReturnType<typeof userEvent.setup>;
+
+/** The backend gets region ids only, and answers with the names. This fake backend does the same. */
+const REGION_NAMES: Record<string, string> = { "1": "DKI Jakarta", "11": "Jakarta Pusat", "111": "Tanah Abang", "1111": "Kebon Melati" };
+function withNames(body: unknown) {
+  const address = body as Record<string, unknown>;
+  const named = (key: string) => {
+    const id = (address[key] as { id: string }).id;
+    return { id, name: REGION_NAMES[id] ?? id };
+  };
+  return { ...address, province: named("province"), city: named("city"), district: named("district"), subDistrict: named("subDistrict") };
+}
 const dialog = (name: string) => screen.getByRole("dialog", { name });
 const payButtons = () => screen.getAllByRole("button", { name: "Pay Now" });
 const regionHandlers = () => {
@@ -103,7 +114,7 @@ describe("the address", () => {
   it("creates an address in an empty form, and then shows it instead of 'Add your address'", async () => {
     const user = userEvent.setup();
     regionHandlers();
-    handlers.set("PUT /api/checkout/address", ({ body }) => new Response(JSON.stringify(draftDto({ address: body })), { status: 200 }));
+    handlers.set("PUT /api/checkout/address", ({ body }) => new Response(JSON.stringify(draftDto({ address: withNames(body) })), { status: 200 }));
     render(<CheckoutPage initialDraft={makeDraft()} />);
 
     await user.click(screen.getByRole("button", { name: /Add your address/ }));
@@ -121,13 +132,13 @@ describe("the address", () => {
     expect(screen.getByText("Jl. Jalan No.1, Kebon Melati, Tanah Abang, Jakarta Pusat, DKI Jakarta")).toBeInTheDocument();
   });
 
-  it("sends the address with the region ids, and nothing else", async () => {
+  it("sends the address with the region ids only (no names), and nothing else", async () => {
     const user = userEvent.setup();
     regionHandlers();
     let sent: unknown;
     handlers.set("PUT /api/checkout/address", ({ body }) => {
       sent = body;
-      return new Response(JSON.stringify(draftDto({ address: body })), { status: 200 });
+      return new Response(JSON.stringify(draftDto({ address: withNames(body) })), { status: 200 });
     });
     render(<CheckoutPage initialDraft={makeDraft()} />);
 
@@ -140,10 +151,10 @@ describe("the address", () => {
     await waitFor(() => expect(sent).toBeDefined());
     expect(sent).toEqual({
       label: "Home",
-      province: { id: "1", name: "DKI Jakarta" },
-      city: { id: "11", name: "Jakarta Pusat" },
-      district: { id: "111", name: "Tanah Abang" },
-      subDistrict: { id: "1111", name: "Kebon Melati" },
+      province: { id: "1" },
+      city: { id: "11" },
+      district: { id: "111" },
+      subDistrict: { id: "1111" },
       street: "Jl. Jalan No.1",
       recipientName: "Agus",
       phone: "081234567890",
@@ -162,7 +173,7 @@ describe("the address", () => {
   it("edits the draft's address only: no profile request is ever made", async () => {
     const user = userEvent.setup();
     regionHandlers();
-    handlers.set("PUT /api/checkout/address", ({ body }) => new Response(JSON.stringify(draftDto({ address: body })), { status: 200 }));
+    handlers.set("PUT /api/checkout/address", ({ body }) => new Response(JSON.stringify(draftDto({ address: withNames(body) })), { status: 200 }));
     render(<CheckoutPage initialDraft={makeDraft({ address: addressDto })} />);
 
     await user.click(screen.getByRole("button", { name: /Edit address/ }));
@@ -431,6 +442,16 @@ describe("Pay Now", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not place your order. Please try again.");
     expect(screen.queryByText(/SQLSTATE/)).not.toBeInTheDocument();
+  });
+
+  it("says why the order was refused (for example the stock ran out)", async () => {
+    const user = userEvent.setup();
+    handlers.set("POST /api/checkout/orders", json(409, { code: "INSUFFICIENT_STOCK", message: "Only 2 left of Banana." }));
+    render(<CheckoutPage initialDraft={readyDraft()} />);
+
+    await user.click(payButtons()[0]!);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Only 2 left of Banana.");
   });
 
   it("shows the Order Received modal on 201, which a click outside cannot close", async () => {

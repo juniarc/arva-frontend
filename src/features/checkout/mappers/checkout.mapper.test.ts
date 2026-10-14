@@ -6,6 +6,7 @@ import {
   parseOrder,
   parsePaymentMethods,
   parseRegions,
+  toAddressRequest,
   parseShippingOptions,
   parseVouchers,
 } from "./checkout.mapper";
@@ -117,5 +118,52 @@ describe("the other mappers", () => {
   it("rejects wrong shapes", () => {
     expect(() => parseShippingOptions({})).toThrow(CheckoutMappingError);
     expect(() => parseOrder({ order: { id: 1 } })).toThrow(CheckoutMappingError);
+  });
+});
+
+describe("checkout address ids", () => {
+  it("turns the backend's numeric region ids into the region lists' dotted codes", () => {
+    const draft = parseDraft(
+      draftDto({
+        address: {
+          ...addressDto,
+          province: { id: "31", name: "DKI Jakarta" },
+          city: { id: "3171", name: "Jakarta Pusat" },
+          district: { id: "317107", name: "Tanah Abang" },
+          subDistrict: { id: "3171071001", name: "Gelora" },
+        },
+      }),
+    );
+    expect([draft.address?.province.id, draft.address?.city.id, draft.address?.district.id, draft.address?.subDistrict.id]).toEqual([
+      "31",
+      "31.71",
+      "31.71.07",
+      "31.71.07.1001",
+    ]);
+    expect(draft.address?.city.name).toBe("Jakarta Pusat");
+  });
+
+  it("sends region ids only, as numeric strings, and no names", () => {
+    expect(
+      toAddressRequest({
+        label: " Home ",
+        province: { id: "31", name: "DKI Jakarta" },
+        city: { id: "31.71", name: "Jakarta Pusat" },
+        district: { id: "31.71.07", name: "Tanah Abang" },
+        subDistrict: { id: "31.71.07.1001", name: "Gelora" },
+        street: "Jl. A",
+        recipientName: "Agus",
+        phone: "081234567890",
+      }),
+    ).toEqual({
+      label: "Home",
+      province: { id: "31" },
+      city: { id: "3171" },
+      district: { id: "317107" },
+      subDistrict: { id: "3171071001" },
+      street: "Jl. A",
+      recipientName: "Agus",
+      phone: "081234567890",
+    });
   });
 });

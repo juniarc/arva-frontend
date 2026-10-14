@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { BackButton } from "@/features/products/components/BackButton";
 import { useProfileState } from "../state/useProfileState";
 import type { Profile } from "../types";
@@ -23,7 +24,15 @@ export function ProfilePage({ initialProfile }: { initialProfile: Profile }) {
       <div className="mx-auto max-w-275 lg:px-6 lg:py-8">
         <div className="bg-white px-4 pb-6 lg:rounded-md lg:border lg:border-line/30 lg:p-8">
           <SectionFeedback notice={state.notice} onClose={state.dismissNotice} />
-          <h1 className="sr-only font-serif text-3xl font-bold text-brand lg:not-sr-only lg:mb-6 lg:block">My Profile</h1>
+          <div className="flex items-center justify-between gap-4 pt-2 lg:mb-6 lg:pt-0">
+            <h1 className="sr-only font-serif text-3xl font-bold text-brand lg:not-sr-only">My Profile</h1>
+            <Link
+              href="/orders"
+              className="ml-auto flex min-h-11 items-center text-sm font-bold text-brand underline focus-visible:outline-2 focus-visible:outline-info lg:min-h-0"
+            >
+              My Orders
+            </Link>
+          </div>
 
           <div className="lg:grid lg:grid-cols-[15rem_1fr] lg:items-start lg:gap-8">
             <ProfilePhoto photoUrl={state.profile.user.photoUrl} onUpload={state.changePhoto} />

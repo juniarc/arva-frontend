@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
   myShopResponseSchema,
   shippingChannelsResponseSchema,
@@ -116,4 +117,32 @@ export function toEditRequest(values: ShopEditValues): ShopEditRequest {
     openingTime: values.openingTime,
     closingTime: values.closingTime,
   };
+}
+
+/** A shop in the search results. */
+export interface ShopMatch {
+  slug: string;
+  name: string;
+  city: string;
+  logoUrl: string | null;
+  rating: { average: number; ratingCount: number };
+}
+
+const shopMatchesSchema = z.object({
+  shops: z.array(
+    z.object({
+      slug: z.string().min(1),
+      name: z.string().min(1),
+      city: z.string(),
+      logoUrl: z.string().nullish(),
+      rating: z.object({ average: z.number(), ratingCount: z.number().int().min(0) }),
+    }),
+  ),
+});
+
+/** GET /shops?q= answer. Throws ShopMappingError for a wrong shape. */
+export function parseShopMatches(data: unknown): ShopMatch[] {
+  const result = shopMatchesSchema.safeParse(data);
+  if (!result.success) throw new ShopMappingError("Unexpected shop search response shape.");
+  return result.data.shops.map((shop) => ({ ...shop, logoUrl: safeImageUrl(shop.logoUrl) }));
 }

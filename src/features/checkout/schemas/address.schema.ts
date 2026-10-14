@@ -47,3 +47,24 @@ export const addressSchema = z.object({
 export type AddressInput = z.infer<typeof addressSchema>;
 
 export const ADDRESS_LIMITS = { label: 30, street: 200, recipientName: 30, phone: 15 } as const;
+
+const regionIdOnly = z.object({ id: z.string().regex(/^\d{1,10}$/, "Select a region") }).strict();
+
+/**
+ * The body the backend takes for PUT /checkout/address: region ids only, as numeric strings without the dots
+ * ("31.71" is "3171"), and no region names. Checked by our proxy before the backend sees it.
+ */
+export const checkoutAddressRequestSchema = z
+  .object({
+    label: addressSchema.shape.label,
+    province: regionIdOnly,
+    city: regionIdOnly,
+    district: regionIdOnly,
+    subDistrict: regionIdOnly,
+    street: addressSchema.shape.street,
+    recipientName: addressSchema.shape.recipientName,
+    phone: addressSchema.shape.phone,
+  })
+  .strict();
+
+export type CheckoutAddressRequest = z.infer<typeof checkoutAddressRequestSchema>;

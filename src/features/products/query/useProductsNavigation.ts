@@ -20,6 +20,6 @@ export function useProductsNavigation(query: ProductsQuery) {
     isPending,
     /** Sets the given filters. A key set to `undefined` clears that filter. */
     apply: (change: ProductsFilters) => go(withFilterChange(query, change)),
-    reset: () => go(clearFilters()),
+    reset: () => go(clearFilters(query.q)),
   };
 }

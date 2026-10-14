@@ -1,10 +1,11 @@
-import { Star, Trash2 } from "lucide-react";
+import { Star } from "lucide-react";
 import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
 import { SafeImage } from "@/components/ui/SafeImage";
+import { DeleteProductButton } from "@/features/seller-products/components/DeleteProductButton";
 import { formatCurrency } from "@/lib/format";
 import { variantsText } from "../mappers/shop-product.mapper";
 import type { OwnerShopProduct } from "../types";
-import { ComingSoonButton } from "./ComingSoonButton";
 
 function Detail({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -15,7 +16,7 @@ function Detail({ label, children }: { label: string; children: React.ReactNode 
   );
 }
 
-/** One product of the owner's shop. Add, edit and delete are not built yet, so those buttons are disabled. */
+/** One product of the owner's shop, with Edit Product and delete. */
 export function OwnerProductRow({ item }: { item: OwnerShopProduct }) {
   const { product, manage } = item;
   const discount = product.discountPercent ? `${product.discountPercent} %` : "None";
@@ -59,21 +60,12 @@ export function OwnerProductRow({ item }: { item: OwnerShopProduct }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2">
-        <ComingSoonButton
-          id={`coming-soon-delete-${product.id}`}
-          label={`Delete ${product.name}`}
-          className="border border-danger text-danger"
-        >
-          <Trash2 className="size-4" aria-hidden="true" />
-        </ComingSoonButton>
-        <ComingSoonButton
-          id={`coming-soon-edit-${product.id}`}
-          label={`Edit product ${product.name}`}
-          className="bg-brand text-white"
-        >
+      <div className="flex items-start justify-end gap-2">
+        <DeleteProductButton productId={product.id} productName={product.name} />
+        <ButtonLink href={`/my-shop/products/${product.id}/edit`} variant="brand" className="w-auto px-4 text-xs lg:min-h-8">
           Edit Product
-        </ComingSoonButton>
+          <span className="sr-only"> {product.name}</span>
+        </ButtonLink>
       </div>
     </li>
   );

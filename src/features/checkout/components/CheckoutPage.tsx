@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { formatCurrency } from "@/lib/format";
 import { useCheckoutState } from "../state/useCheckoutState";
-import type { Draft } from "../types";
+import type { Draft, Address } from "../types";
 import { AddressFormModal } from "./AddressFormModal";
 import { CheckoutHeader } from "./CheckoutHeader";
 import { DamageProtectionRow } from "./DamageProtectionRow";
@@ -27,7 +27,13 @@ type Modal = "address" | "shipping" | "voucher" | "payment" | null;
  * The checkout screen. One component tree for every screen size: the summary card and Pay Now button
  * (desktop), the bottom bar and back bar (mobile and tablet) are shown with Tailwind's `lg:` classes.
  */
-export function CheckoutPage({ initialDraft }: { initialDraft: Draft }) {
+interface CheckoutPageProps {
+  initialDraft: Draft;
+  /** The profile address, when it could not be copied into the draft on its own: it fills the address form. */
+  suggestedAddress?: Address | null;
+}
+
+export function CheckoutPage({ initialDraft, suggestedAddress = null }: CheckoutPageProps) {
   const router = useRouter();
   const checkout = useCheckoutState(initialDraft);
   const [modal, setModal] = useState<Modal>(null);
@@ -102,7 +108,7 @@ export function CheckoutPage({ initialDraft }: { initialDraft: Draft }) {
         onPay={checkout.pay}
       />
 
-      <AddressFormModal open={modal === "address"} address={draft.address} onSave={checkout.saveAddress} onClose={close} />
+      <AddressFormModal open={modal === "address"} address={draft.address ?? suggestedAddress} onSave={checkout.saveAddress} onClose={close} />
       <ShippingOptionsModal
         open={modal === "shipping"}
         selectedId={draft.shipping?.id}

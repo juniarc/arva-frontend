@@ -10,6 +10,7 @@ import { SavingOverlay } from "@/features/profile/components/SavingOverlay";
 import { updateMyShop } from "../api/shop.client";
 import { toEditRequest, toEditValues } from "../mappers/shop.mapper";
 import { SHOP_EDIT_FIELDS, shopEditFormSchema, type ShopEditValues } from "../schemas/shop-edit.schema";
+import { readSaveFailure } from "../state/save-failure";
 import { useShopRegions } from "../state/useShopRegions";
 import type { MyShop, ShippingChannel } from "../types";
 import { CHANNELS_UNAVAILABLE_MESSAGE, ShopInfoFields } from "./ShopInfoFields";
@@ -67,19 +68,9 @@ export function ShopEditForm({ shop, channels }: ShopEditFormProps) {
       return;
     }
 
-    // Messages for known fields go under the field. Anything else is the general failure message.
-    const fieldErrors: Record<string, string> = {};
-    if (result.status === 409 && result.field && SHOP_EDIT_FIELDS.includes(result.field)) fieldErrors[result.field] = result.message;
-    if (result.status === 400) {
-      for (const [field, message] of Object.entries(result.errors ?? {})) {
-        if (SHOP_EDIT_FIELDS.includes(field)) fieldErrors[field] = message;
-      }
-    }
-    if (Object.keys(fieldErrors).length === 0) {
-      setNotice({ kind: "error", message: FAILED_MESSAGE });
-      return;
-    }
+    const { fieldErrors, banner } = readSaveFailure(result, SHOP_EDIT_FIELDS, FAILED_MESSAGE);
     for (const [field, message] of Object.entries(fieldErrors)) form.setError(field as FieldName, { type: "server", message });
+    if (banner) setNotice({ kind: "error", message: banner });
   });
 
   const saveBlocked = channels === null || lists.unavailable;

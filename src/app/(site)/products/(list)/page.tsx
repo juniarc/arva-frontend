@@ -10,6 +10,7 @@ import {
   parseProductsQuery,
   type RawSearchParams,
 } from "@/features/products/query/products-query";
+import { ShopMatches } from "@/features/shops/components/ShopMatches";
 import { isLoggedIn } from "@/lib/session";
 
 interface ProductsPageProps {
@@ -27,6 +28,7 @@ async function resolveQuery(searchParams: Promise<RawSearchParams>) {
 
 export async function generateMetadata({ searchParams }: ProductsPageProps): Promise<Metadata> {
   const { query, categories } = await resolveQuery(searchParams);
+  if (query.q) return { title: `Search: ${query.q}` };
   const category = categories.find((item) => item.slug === query.category);
   return { title: category?.name ?? "Products" };
 }
@@ -35,7 +37,17 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const [{ query, categories }, loggedIn] = await Promise.all([resolveQuery(searchParams), isLoggedIn()]);
 
   return (
-    <ProductListPage query={query} categories={categories}>
+    <ProductListPage
+      query={query}
+      categories={categories}
+      shops={
+        query.q ? (
+          <Suspense key={query.q} fallback={null}>
+            <ShopMatches q={query.q} />
+          </Suspense>
+        ) : undefined
+      }
+    >
       {/* The key makes the skeleton show again on every filter or page change. */}
       <Suspense key={buildProductsHref(query)} fallback={<ProductGridSkeleton />}>
         <ProductResults query={query} isLoggedIn={loggedIn} />

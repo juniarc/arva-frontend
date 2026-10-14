@@ -1,6 +1,7 @@
 import { profileResponseSchema, type ProfileInfoRequest, type ProfileInfoValues, type ProfileResponseDto } from "../schemas/profile.schema";
 import type { ProfileAddressRequest, ProfileAddressValues } from "../schemas/profile-address.schema";
-import type { Profile } from "../types";
+import { toNumericId, toRegionCode, type RegionCodeLevel } from "@/lib/region-code";
+import type { Profile, Region } from "../types";
 
 /** The backend sent something the profile page cannot use. */
 export class ProfileMappingError extends Error {
@@ -17,7 +18,11 @@ function safePhotoUrl(value: string | null | undefined): string | null {
   return /^https?:\/\//i.test(url) || (url.startsWith("/") && !url.startsWith("//")) ? url : null;
 }
 
+/** The backend's numeric region id as the region lists' dotted code, so the saved region can be chosen again. */
+const regionFromBackend = (level: RegionCodeLevel, region: Region): Region => ({ id: toRegionCode(level, region.id), name: region.name });
+
 export function toProfile(dto: ProfileResponseDto): Profile {
+  const { address } = dto;
   return {
     user: {
       username: dto.user.username,
@@ -26,7 +31,16 @@ export function toProfile(dto: ProfileResponseDto): Profile {
       phone: dto.user.phone?.trim() || null,
       photoUrl: safePhotoUrl(dto.user.photoUrl),
     },
-    address: dto.address ?? null,
+    address: address
+      ? {
+          street: address.street,
+          province: regionFromBackend("province", address.province),
+          city: regionFromBackend("city", address.city),
+          district: regionFromBackend("district", address.district),
+          subDistrict: regionFromBackend("subDistrict", address.subDistrict),
+          zipCode: address.zipCode,
+        }
+      : null,
   };
 }
 
@@ -48,14 +62,14 @@ export function toInfoRequest(values: ProfileInfoValues): ProfileInfoRequest {
   };
 }
 
-/** Only the ids go to the backend. */
+/** Only the ids go to the backend, as numeric strings without the dots ("31.71" is "3171"). */
 export function toAddressRequest(values: ProfileAddressValues): ProfileAddressRequest {
   return {
     street: values.street.trim(),
-    province: { id: values.province.id },
-    city: { id: values.city.id },
-    district: { id: values.district.id },
-    subDistrict: { id: values.subDistrict.id },
+    province: { id: toNumericId(values.province.id) },
+    city: { id: toNumericId(values.city.id) },
+    district: { id: toNumericId(values.district.id) },
+    subDistrict: { id: toNumericId(values.subDistrict.id) },
     zipCode: values.zipCode,
   };
 }

@@ -386,9 +386,9 @@ describe("ProfilePage: Address", () => {
     expect(puts()[0]?.body).toEqual({
       street: "Jl. Kebon Sirih No. 1",
       province: { id: "31" },
-      city: { id: "31.71" },
-      district: { id: "31.71.07" },
-      subDistrict: { id: "31.71.07.1001" },
+      city: { id: "3171" },
+      district: { id: "317107" },
+      subDistrict: { id: "3171071001" },
       zipCode: "12345",
     });
     expect(requests.some((request) => request.url.includes("/api/checkout"))).toBe(false);

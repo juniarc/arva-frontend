@@ -49,9 +49,8 @@ async function proxyWrite(request: Request, route: WriteRoute): Promise<NextResp
     if (result.reason === "network") {
       return NextResponse.json({ message: "Unable to reach the server. Please try again." }, { status: 503 });
     }
-    if (result.status >= 500 || result.status === 404) {
-      logServerError(`${route.event}_failed`, { endpoint: route.path, status: result.status, reason: result.reason });
-    }
+    // Every failure is logged with its status (never the body), so the terminal shows why a save failed.
+    logServerError(`${route.event}_failed`, { endpoint: route.path, status: result.status, reason: result.reason });
     const status = PASS_THROUGH_STATUSES.has(result.status) ? result.status : 502;
     return NextResponse.json(proxyErrorBody(result.status, result.body, route.failureMessage, route.conflictFields), { status });
   }

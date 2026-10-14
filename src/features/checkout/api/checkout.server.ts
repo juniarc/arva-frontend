@@ -7,7 +7,7 @@ import { requestJson } from "@/lib/api/http";
 import { AUTH_COOKIE_NAME } from "@/lib/cookies";
 import { getEnv } from "@/lib/env";
 import { logServerError } from "@/lib/logger";
-import { addressSchema } from "../schemas/address.schema";
+import { checkoutAddressRequestSchema } from "../schemas/address.schema";
 import {
   createDraftRequestSchema,
   damageProtectionRequestSchema,
@@ -51,7 +51,7 @@ const route = (
 const ROUTES: ProxyRoute[] = [
   route("GET", "/checkout", draftSchema, "Could not load your checkout."),
   route("POST", "/checkout", draftSchema, "Could not start checkout. Please try again.", createDraftRequestSchema),
-  route("PUT", "/checkout/address", draftSchema, "Could not save the address. Please try again.", addressSchema),
+  route("PUT", "/checkout/address", draftSchema, "Could not save the address. Please try again.", checkoutAddressRequestSchema),
   route("PUT", "/checkout/damage-protection", draftSchema, "Could not update damage protection. Please try again.", damageProtectionRequestSchema),
   route("GET", "/checkout/shipping-options", shippingOptionsSchema, "Could not load shipping options."),
   route("PUT", "/checkout/shipping", draftSchema, "Could not select the shipping option. Please try again.", shippingRequestSchema),

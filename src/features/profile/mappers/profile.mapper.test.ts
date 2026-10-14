@@ -34,6 +34,27 @@ describe("parseProfile", () => {
     expect(profile.address?.zipCode).toBe("10270");
   });
 
+  it("turns the backend's numeric region ids into the region lists' dotted codes", () => {
+    const dto = profileDto();
+    const address = parseProfile({
+      ...dto,
+      address: {
+        ...dto.address,
+        province: { id: "12", name: "Sumatera Utara" },
+        city: { id: "1211", name: "Kabupaten Dairi" },
+        district: { id: "121101", name: "Sidikalang" },
+        subDistrict: { id: "1211012001", name: "Batang Beruh" },
+      },
+    }).address;
+
+    expect([address?.province.id, address?.city.id, address?.district.id, address?.subDistrict.id]).toEqual([
+      "12",
+      "12.11",
+      "12.11.01",
+      "12.11.01.2001",
+    ]);
+  });
+
   it("keeps a missing or empty phone as null", () => {
     const dto = profileDto();
     expect(parseProfile({ ...dto, user: { ...dto.user, phone: "  " } }).user.phone).toBeNull();
@@ -68,15 +89,15 @@ describe("request mappers", () => {
     });
   });
 
-  it("sends only the region ids", () => {
+  it("sends only the region ids, as numeric strings without the dots", () => {
     const address = makeProfile().address;
     if (!address) throw new Error("fixture has an address");
     expect(toAddressRequest(address)).toEqual({
       street: "Jl. Kebon Sirih No. 1",
       province: { id: "31" },
-      city: { id: "31.71" },
-      district: { id: "31.71.07" },
-      subDistrict: { id: "31.71.07.1001" },
+      city: { id: "3171" },
+      district: { id: "317107" },
+      subDistrict: { id: "3171071001" },
       zipCode: "10270",
     });
   });

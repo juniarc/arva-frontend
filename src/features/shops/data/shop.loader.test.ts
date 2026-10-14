@@ -61,12 +61,21 @@ describe("getShop", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("throws for a server error, a network failure and a bad shape", async () => {
+  it("tries once more when the backend cannot be reached right away (for example while it restarts)", async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError("fetch failed")).mockResolvedValueOnce(json(200, { shop: shopDto() }));
+
+    expect((await getShop("bali-fresh-farm")).status).toBe("ok");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("throws for a server error, a network failure that stays, and a bad shape", async () => {
     fetchMock.mockResolvedValueOnce(json(500, { message: "boom" }));
     await expect(getShop("a")).rejects.toBeInstanceOf(ShopLoadError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    fetchMock.mockRejectedValueOnce(new TypeError("fetch failed"));
+    fetchMock.mockRejectedValue(new TypeError("fetch failed"));
     await expect(getShop("a")).rejects.toBeInstanceOf(ShopLoadError);
+    fetchMock.mockReset();
 
     fetchMock.mockResolvedValueOnce(json(200, { shop: shopDto({ name: "" }) }));
     await expect(getShop("a")).rejects.toBeInstanceOf(ShopMappingError);
@@ -91,8 +100,9 @@ describe("getShopProducts", () => {
     fetchMock.mockResolvedValueOnce(json(404, { message: "Not found" }));
     expect(await getShopProducts("a", 1)).toEqual({ status: "error" });
 
-    fetchMock.mockRejectedValueOnce(new TypeError("fetch failed"));
+    fetchMock.mockRejectedValue(new TypeError("fetch failed"));
     expect(await getShopProducts("a", 1)).toEqual({ status: "error" });
+    fetchMock.mockReset();
 
     fetchMock.mockResolvedValueOnce(json(200, { products: "nope" }));
     expect(await getShopProducts("a", 1)).toEqual({ status: "error" });

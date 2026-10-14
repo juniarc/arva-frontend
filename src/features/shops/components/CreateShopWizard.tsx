@@ -8,6 +8,8 @@ import { createShop } from "../api/shop.client";
 import { toEditRequest } from "../mappers/shop.mapper";
 import { identityFormSchema, type IdentityValues } from "../schemas/create-shop.schema";
 import { SHOP_EDIT_FIELDS, shopEditFormSchema, type ShopEditValues } from "../schemas/shop-edit.schema";
+import { readSaveFailure } from "../state/save-failure";
+import type { Category } from "@/features/products/types";
 import type { ShippingChannel } from "../types";
 import { IdentityStep } from "./IdentityStep";
 import { ShopCreatedStep } from "./ShopCreatedStep";
@@ -39,7 +41,14 @@ type Step = 1 | 2 | 3;
  * The shop is created when step 2 is finished. Step 3 (uploading a product) is not built yet.
  * Step 1 is checked here but not sent: the backend's create endpoint does not take the identity yet.
  */
-export function CreateShopWizard({ channels }: { channels: ShippingChannel[] | null }) {
+interface CreateShopWizardProps {
+  /** `null` means the list could not be loaded. */
+  channels: ShippingChannel[] | null;
+  /** For step 3, the product form. Empty when they could not be loaded. */
+  categories: Category[];
+}
+
+export function CreateShopWizard({ channels, categories }: CreateShopWizardProps) {
   const [step, setStep] = useState<Step>(1);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<ShopNotice | null>(null);
@@ -90,20 +99,11 @@ export function CreateShopWizard({ channels }: { channels: ShippingChannel[] | n
       return;
     }
 
-    // Messages for known fields go under the field. The backend's own wording for a field we do not know is not shown.
-    const messages: Record<string, string> = {};
-    if (result.status === 409 && result.field) messages[result.field] = result.message;
-    if (result.status === 400) Object.assign(messages, result.errors);
-
-    let shown = false;
-    for (const [field, message] of Object.entries(messages)) {
-      if (!SHOP_EDIT_FIELDS.includes(field)) continue;
+    const { fieldErrors, banner } = readSaveFailure(result, SHOP_EDIT_FIELDS, CREATE_FAILED_MESSAGE);
+    for (const [field, message] of Object.entries(fieldErrors)) {
       shopForm.setError(field as keyof ShopEditValues, { type: "server", message });
-      shown = true;
     }
-
-    // A 409 without a field (for example "you already have a shop") has a message written for the user.
-    if (!shown) setNotice({ kind: "error", message: result.status === 409 ? result.message : CREATE_FAILED_MESSAGE });
+    if (banner) setNotice({ kind: "error", message: banner });
   }, incomplete);
 
   return (
@@ -144,7 +144,7 @@ export function CreateShopWizard({ channels }: { channels: ShippingChannel[] | n
               onNext={createFromShopInfo}
             />
           )}
-          {step === 3 && created && <ShopCreatedStep shop={created} />}
+          {step === 3 && created && <ShopCreatedStep shop={created} categories={categories} />}
         </div>
       </div>
     </>

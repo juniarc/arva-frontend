@@ -2,8 +2,8 @@ import "server-only";
 import { requestJson } from "@/lib/api/http";
 import { getEnv } from "@/lib/env";
 import { logServerError } from "@/lib/logger";
-import { CheckoutMappingError, parseDraft } from "../mappers/checkout.mapper";
-import type { Draft } from "../types";
+import { CheckoutMappingError, parseDraft, toAddressRequest } from "../mappers/checkout.mapper";
+import type { Address, Draft } from "../types";
 
 const LOAD_TIMEOUT_MS = 8_000;
 
@@ -42,5 +42,29 @@ export async function loadDraft(token: string): Promise<DraftLoadResult> {
       logServerError("checkout.unexpected_response", { endpoint: "/checkout", status: result.status });
     }
     throw error;
+  }
+}
+
+/**
+ * PUT /checkout/address with the user's token, from the server (used to copy the profile address into a
+ * new draft). Returns the updated draft, or null when it could not be saved: the page then asks the user.
+ */
+export async function saveDraftAddress(token: string, address: Address): Promise<Draft | null> {
+  const result = await requestJson(`${getEnv().API_BASE_URL}/checkout/address`, {
+    method: "PUT",
+    body: toAddressRequest(address),
+    headers: { Authorization: `Bearer ${token}` },
+    timeoutMs: LOAD_TIMEOUT_MS,
+  });
+
+  if (!result.ok) {
+    logServerError("checkout.prefill_failed", { endpoint: "/checkout/address", status: result.status, reason: result.reason });
+    return null;
+  }
+  try {
+    return parseDraft(result.data);
+  } catch {
+    logServerError("checkout.prefill_unexpected_response", { endpoint: "/checkout/address", status: result.status });
+    return null;
   }
 }

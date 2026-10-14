@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Heart, LogOut, Store, User, X } from "lucide-react";
+import { Globe, Heart, LogOut, Receipt, Store, User, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -114,6 +114,10 @@ export function MobileMenu({
             <Link href="/wishlist" className={ROW}>
               <Heart className="size-4 shrink-0" aria-hidden="true" />
               Wishlist
+            </Link>
+            <Link href="/orders" className={ROW}>
+              <Receipt className="size-4 shrink-0" aria-hidden="true" />
+              My Orders
             </Link>
           </Section>
         )}

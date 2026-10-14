@@ -27,13 +27,13 @@ A user can be a buyer and a seller at the same time. Sellers can buy from other 
 | 9 | Products | Product list by category | Guest | In progress (/products) | Figma: products |
 | 10 | Products | Filters (price, category, and other attributes) | Guest | In progress (/products) | Figma: filter modal |
 | 11 | Products | Sort (for example newest, price, best selling) | Guest | In progress (/products) | Figma: sort |
-| 12 | Products | Search (products, categories, shops) | Guest | Design pending | Figma: search results |
+| 12 | Products | Search (products, categories, shops) | Guest | In progress (/search forwards to /products?q=, with matching shops above; no search design yet) | Figma: search results |
 | 13 | Products | Product detail (images, variants, stock, price, discount, reviews) | Guest | In progress (uses the backend API) | Figma: product detail |
 | 14 | Products | Ratings and reviews | Buyer (write), Guest (read) | Design pending | Figma: review section, rating modal |
 | 15 | Shops | Public shop page (shop info, products) | Guest | In progress (/shops/[slug]; the mobile layout is an assumption, the design only has desktop) | Figma: shop page (desktop) |
 | 16 | Shops | Create shop | Buyer | In progress (/my-shop/create wizard: step 1 identity and step 2 shop information create the shop; step 3 upload product waits for the product endpoints) | Figma: create shop |
 | 17 | Seller | My shop dashboard | Seller | In progress (owner view of /shops/[slug] and /my-shop/edit; product add, edit and delete are disabled "Coming soon") | Figma: my shop |
-| 18 | Seller | Manage products (create, edit, status, stock, variants) | Seller | Design pending | Figma: manage product modal |
+| 18 | Seller | Manage products (create, edit, status, stock, variants) | Seller | In progress (create: /my-shop/products/new and wizard step 3; edit: /my-shop/products/[id]/edit; delete from the owner's product list) | Figma: upload product, manage product modal |
 | 19 | Seller | Tags | Seller | Design pending | Figma: tag modal |
 | 20 | Seller | Vouchers and discounts | Seller | Design pending | Figma: voucher section |
 | 21 | Cart | Add to cart (with variant and quantity) | Buyer | Design pending | Figma: add to cart modal |
@@ -41,11 +41,11 @@ A user can be a buyer and a seller at the same time. Sellers can buy from other 
 | 23 | Wishlist | Add and remove wishlist items | Buyer | In progress (/wishlist page and removal, and the heart on the product page; cart-row hearts and product cards are not connected yet) | Figma: wishlist |
 | 24 | Checkout | Shipment: address and shipping option | Buyer | In progress (/checkout: address, shipping) | Figma: shipment, address, shipping modal |
 | 25 | Checkout | Buy now (single product, skips the cart) | Buyer | Design pending | Figma: buy now |
-| 26 | Checkout | Vouchers at checkout | Buyer | In progress (/checkout: vouchers modal) | Figma: voucher modal |
+| 26 | Checkout | Vouchers at checkout | Buyer | In progress (/checkout: vouchers modal, backend rules built) | Figma: voucher modal |
 | 27 | Checkout | Payment method selection | Buyer | In progress (/checkout: payment method modal) | Figma: payment modal |
-| 28 | Checkout | Place order and confirmation | Buyer | In progress (order received modal; the order endpoint answers 503 until payments exist) | Figma: success modal |
+| 28 | Checkout | Place order and confirmation | Buyer | In progress (Pay Now creates a paid order with a simulated payment; sold counts go up) | Figma: success modal |
 | 29 | Checkout | Payment provider integration | Buyer | Parked (decide after main features) | None |
-| 30 | Orders | Order history and order status | Buyer | Design pending | Figma: order history |
+| 30 | Orders | Order history and order status | Buyer | In progress (/orders: orders with lines by shop, status and details; no design yet) | Figma: order history |
 | 31 | Orders | Seller order management | Seller | Not started | Not in design yet |
 | 32 | Profile | View and edit profile, address | Buyer | In progress (/profile: info and address sections; photo upload UI is there, its endpoint is not built yet) | Figma: My Profile |
 

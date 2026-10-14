@@ -32,7 +32,7 @@ export async function ProductResults({ query, isLoggedIn }: { query: ProductsQue
       </p>
 
       {products.length === 0 ? (
-        <EmptyProducts />
+        <EmptyProducts search={query.q} />
       ) : (
         <ProductGrid products={products} isLoggedIn={isLoggedIn} />
       )}

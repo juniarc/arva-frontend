@@ -1,4 +1,5 @@
 import type { RegionLevel, RegionSelection } from "@/features/checkout/state/address-regions";
+import { toNumericId, toRegionCode as toRegionCodeAt, type RegionCodeLevel } from "@/lib/region-code";
 import type { Region } from "../types";
 
 export type RegionField = "provinceId" | "cityId" | "districtId" | "subDistrictId";
@@ -30,33 +31,16 @@ export function regionFromId(id: string): Region | undefined {
   return id === NO_REGION ? undefined : { id, name: "" };
 }
 
-/** How many digits each part of a wilayah.id code has: "31.71.07.1001" is 2, 2, 2 and 4 digits. */
-const CODE_PARTS: Record<RegionField, number[]> = {
-  provinceId: [2],
-  cityId: [2, 2],
-  districtId: [2, 2, 2],
-  subDistrictId: [2, 2, 2, 4],
+const LEVEL_OF: Record<RegionField, RegionCodeLevel> = {
+  provinceId: "province",
+  cityId: "city",
+  districtId: "district",
+  subDistrictId: "subDistrict",
 };
 
-/**
- * The backend keeps region ids as numeric strings ("31.71.07" is "317107"), while the region lists (wilayah.id)
- * use dotted codes. These two functions convert between them. Nothing is lost: the part sizes are fixed.
- */
-export function toNumericId(code: string): string {
-  return code.replace(/\./g, "");
-}
+export { toNumericId };
 
-/** "317107" as a district is "31.71.07". An id that is already dotted, or does not fit the level, is returned as it is. */
+/** The backend's numeric id of a field as the region lists' dotted code. See lib/region-code.ts. */
 export function toRegionCode(field: RegionField, id: string): string {
-  const sizes = CODE_PARTS[field];
-  if (id.includes(".") || !/^\d+$/.test(id) || id.length !== sizes.reduce((sum, size) => sum + size, 0)) return id;
-
-  let at = 0;
-  return sizes
-    .map((size) => {
-      const part = id.slice(at, at + size);
-      at += size;
-      return part;
-    })
-    .join(".");
+  return toRegionCodeAt(LEVEL_OF[field], id);
 }

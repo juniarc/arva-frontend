@@ -14,6 +14,7 @@ vi.mock("@/features/shops/components/ShopEditForm", () => ({ ShopEditForm: () =>
 vi.mock("@/features/shops/components/CreateShopWizard", () => ({ CreateShopWizard: () => null }));
 vi.mock("@/features/products/components/BackButton", () => ({ BackButton: () => null }));
 vi.mock("@/features/shops/data/shop.loader", () => ({ getMyShop: vi.fn(), getShippingChannels: vi.fn() }));
+vi.mock("@/features/products/api/catalog.server", () => ({ getCategories: vi.fn(async () => []) }));
 vi.mock("@/lib/auth/require-user", () => ({
   requireUser: vi.fn(),
   // Like the real one, it never returns: it throws.

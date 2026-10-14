@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { myShopDto } from "../shop.fixture";
 import { CREATE_FAILED_MESSAGE, CreateShopWizard, INCOMPLETE_MESSAGE } from "./CreateShopWizard";
-import { PRODUCT_UPLOAD_COMING_SOON } from "./ShopCreatedStep";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), back: vi.fn(), refresh: vi.fn() }) }));
 
@@ -11,6 +10,8 @@ type Handler = (request: { body: unknown }) => Response | Promise<Response>;
 const handlers = new Map<string, Handler>();
 const requests: { method: string; url: string; body: unknown }[] = [];
 const json = (status: number, body: unknown) => () => new Response(JSON.stringify(body), { status });
+
+const categories = [{ id: "1", slug: "seeds", name: "Seeds", iconKey: "seeds" }];
 
 const channels = [
   { id: "1", name: "JNE" },
@@ -67,7 +68,7 @@ async function goToStep2(user: User) {
 
 describe("CreateShopWizard: step 1, Identity Verification", () => {
   it("starts on step 1 with Back disabled and the progress marked", () => {
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Identity Verification" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Back" })).toBeDisabled();
@@ -77,7 +78,7 @@ describe("CreateShopWizard: step 1, Identity Verification", () => {
 
   it("Next with empty fields shows the messages and the banner, and stays on step 1", async () => {
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
 
     await next(user);
 
@@ -90,7 +91,7 @@ describe("CreateShopWizard: step 1, Identity Verification", () => {
 
   it("the IC number takes digits only, 16 of them", async () => {
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
 
     await user.type(screen.getByLabelText("IC Number (KTP)"), "31a71-2345678900012345");
 
@@ -99,7 +100,7 @@ describe("CreateShopWizard: step 1, Identity Verification", () => {
 
   it("an IC number with fewer than 16 digits is rejected", async () => {
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await user.type(screen.getByLabelText("Name"), "Agus");
     await user.type(screen.getByLabelText("IC Number (KTP)"), "123456");
     await user.click(screen.getByRole("checkbox", { name: /Terms & Conditions/ }));
@@ -111,7 +112,7 @@ describe("CreateShopWizard: step 1, Identity Verification", () => {
 
   it("does not move on without the agreement", async () => {
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await user.type(screen.getByLabelText("Name"), "Agus");
     await user.type(screen.getByLabelText("IC Number (KTP)"), KTP);
 
@@ -123,7 +124,7 @@ describe("CreateShopWizard: step 1, Identity Verification", () => {
 
   it("a valid step 1 goes to step 2 and makes no request for the identity", async () => {
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
 
     await goToStep2(user);
 
@@ -135,7 +136,7 @@ describe("CreateShopWizard: step 1, Identity Verification", () => {
 describe("CreateShopWizard: step 2, Shop Information", () => {
   it("Back returns to step 1 with what was typed", async () => {
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
     await user.type(screen.getByLabelText("Shop Name"), "Typed Shop");
 
@@ -153,7 +154,7 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
 
   it("Next with empty shop fields shows the messages and sends nothing", async () => {
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
 
     await next(user);
@@ -168,7 +169,7 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
   it("creates the shop with the identity and the shop fields, then shows step 3", async () => {
     handlers.set("POST /api/shops", json(201, { shop: myShopDto({ slug: "bali-fresh-farm", name: "Bali Fresh Farm" }) }));
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
     await fillShop(user);
 
@@ -190,8 +191,9 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
       openingTime: "09:00",
       closingTime: "17:00",
     });
-    expect(screen.getByText(PRODUCT_UPLOAD_COMING_SOON)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Go to my shop" })).toHaveAttribute("href", "/shops/bali-fresh-farm");
+    // Step 3 is the product form, which can be skipped.
+    expect(screen.getByLabelText("Product Name")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Skip for now" })).toBeInTheDocument();
     // The two earlier steps are done.
     const progress = screen.getByRole("list", { name: "Create shop progress" });
     expect(within(progress).getByText("Step 1, done:")).toBeInTheDocument();
@@ -201,7 +203,7 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
     let finish: (response: Response) => void = () => undefined;
     handlers.set("POST /api/shops", () => new Promise<Response>((resolve) => (finish = resolve)));
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
     await fillShop(user);
 
@@ -216,7 +218,7 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
   it("a 409 for the shop name keeps step 2 open and shows the message under Shop Name", async () => {
     handlers.set("POST /api/shops", json(409, { message: "This shop name is already taken.", field: "name" }));
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
     await fillShop(user);
 
@@ -227,24 +229,35 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
     expect(screen.getByLabelText("Shop Name")).toHaveValue("Bali Fresh Farm");
   });
 
-  it("a message for a field the form does not have is not shown, and the general message is", async () => {
-    handlers.set("POST /api/shops", json(400, { message: "Invalid.", errors: { icNumber: "Unknown field." } }));
+  it("shows the backend's message for a field the form does not have in the banner, and stays on step 2", async () => {
+    handlers.set("POST /api/shops", json(400, { message: "Please fix the highlighted fields.", errors: { zipCode: "Zip code must be exactly 5 digits." } }));
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
     await fillShop(user);
 
     await next(user);
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(CREATE_FAILED_MESSAGE);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Zip code must be exactly 5 digits.");
     expect(screen.getByRole("heading", { level: 1, name: "Shop Information" })).toBeInTheDocument();
-    expect(screen.queryByText("Unknown field.")).not.toBeInTheDocument();
+  });
+
+  it("shows the backend's reason for a rate limit", async () => {
+    handlers.set("POST /api/shops", json(429, { message: "Too many requests. Please try again later." }));
+    const user = userEvent.setup();
+    render(<CreateShopWizard channels={channels} categories={categories} />);
+    await goToStep2(user);
+    await fillShop(user);
+
+    await next(user);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Too many requests. Please try again later.");
   });
 
   it("a 409 without a field (for example 'you already have a shop') shows the backend's message", async () => {
     handlers.set("POST /api/shops", json(409, { message: "You already have a shop." }));
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
     await fillShop(user);
 
@@ -259,7 +272,7 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
   ])("%s shows the general failure message and keeps the values", async (_name, handler) => {
     handlers.set("POST /api/shops", handler());
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
     await fillShop(user);
 
@@ -272,7 +285,7 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
 
   it("says so and disables Next when the shipping channels could not be loaded", async () => {
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={null} />);
+    render(<CreateShopWizard channels={null} categories={categories} />);
     await goToStep2(user);
 
     expect(screen.getByRole("alert")).toHaveTextContent("Shipping channels are not available right now.");
@@ -282,7 +295,7 @@ describe("CreateShopWizard: step 2, Shop Information", () => {
   it("says so and disables Next when the region endpoints return 404", async () => {
     handlers.delete("GET /api/regions/provinces");
     const user = userEvent.setup();
-    render(<CreateShopWizard channels={channels} />);
+    render(<CreateShopWizard channels={channels} categories={categories} />);
     await goToStep2(user);
 
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Address options are not available yet."));

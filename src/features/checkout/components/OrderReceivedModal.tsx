@@ -24,6 +24,9 @@ export function OrderReceivedModal({ open, code, onClose }: OrderReceivedModalPr
         <ButtonLink href="/products" variant="mint" className="mt-2">
           Continue Shopping
         </ButtonLink>
+        <ButtonLink href="/orders" variant="outline">
+          View My Orders
+        </ButtonLink>
       </div>
     </ModalShell>
   );

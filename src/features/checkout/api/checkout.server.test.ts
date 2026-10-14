@@ -21,13 +21,13 @@ const call = (method: string, body?: unknown) =>
 const requestBody = () => JSON.parse(((fetchMock.mock.calls[0] as [string, RequestInit])[1].body as string) ?? "null");
 const requestInit = () => (fetchMock.mock.calls[0] as [string, RequestInit])[1];
 
-// What the browser sends for an address: region ids are strings.
+// What the browser sends for an address: region ids only, as numeric strings, and no names.
 const addressBody = {
   ...addressDto,
-  province: { id: "1", name: "DKI Jakarta" },
-  city: { id: "11", name: "Jakarta Pusat" },
-  district: { id: "111", name: "Tanah Abang" },
-  subDistrict: { id: "1111", name: "Kebon Melati" },
+  province: { id: "31" },
+  city: { id: "3171" },
+  district: { id: "317107" },
+  subDistrict: { id: "3171071001" },
 };
 
 beforeEach(() => {
@@ -73,13 +73,24 @@ describe("proxyToBackend", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("sends only the known fields of the address on", async () => {
+  it("forwards an address with numeric region ids", async () => {
     fetchMock.mockResolvedValue(json(200, draftDto({ address: addressDto })));
 
-    await proxyToBackend(call("PUT", { ...addressBody, profileId: 99 }), "/checkout/address");
+    await proxyToBackend(call("PUT", addressBody), "/checkout/address");
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe("http://backend.test/api/checkout/address");
     expect(requestBody()).toEqual(addressBody);
+  });
+
+  it("rejects an address with dotted ids, region names or extra fields before the backend sees it", async () => {
+    for (const bad of [
+      { ...addressBody, city: { id: "31.71" } },
+      { ...addressBody, city: { id: "3171", name: "Jakarta Pusat" } },
+      { ...addressBody, profileId: 99 },
+    ]) {
+      expect((await proxyToBackend(call("PUT", bad), "/checkout/address")).status).toBe(400);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("does not forward the region lists to the backend (they come from wilayah.id)", async () => {

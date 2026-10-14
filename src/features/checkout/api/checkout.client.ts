@@ -7,6 +7,7 @@ import {
   parseRegions,
   parseShippingOptions,
   parseVouchers,
+  toAddressRequest,
 } from "../mappers/checkout.mapper";
 import type { AddressInput } from "../schemas/address.schema";
 import type { Draft, Order, PaymentMethod, Region, ShippingOption, Voucher } from "../types";
@@ -63,7 +64,7 @@ export function getDraft(): Promise<ApiResult<Draft>> {
 
 /** PUT /api/checkout/address. Changes the draft's address only, never the profile. */
 export function saveAddress(address: AddressInput): Promise<ApiResult<Draft>> {
-  return call("PUT", "/api/checkout/address", address, parseDraft, "Could not save the address. Please try again.");
+  return call("PUT", "/api/checkout/address", toAddressRequest(address), parseDraft, "Could not save the address. Please try again.");
 }
 
 export function setDamageProtection(enabled: boolean): Promise<ApiResult<Draft>> {
