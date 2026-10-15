@@ -21,7 +21,7 @@ A user can be a buyer and a seller at the same time. Sellers can buy from other 
 | 3 | Auth | Google login and sign-up | Guest | Parked (UI shows "Coming soon") | Figma: Login, Sign Up |
 | 4 | Auth | Forgot password | Guest | Design pending (placeholder route only) | Figma: link on Login |
 | 5 | Auth | Log out | Buyer, Seller | Not started | Not in design yet |
-| 6 | Layout | Global header (top bar, search, Wishlist, Cart, My Profile) | All | In progress (auth pages) | Figma: auth frames |
+| 6 | Layout | Global header (top bar, search, Wishlist, Cart, My Profile) | All | In progress (desktop Cart, My Shop and profile dropdowns; avatar and username in the navbar and mobile menu) | Figma: home navbar |
 | 7 | Layout | Footer | All | In progress (home page, dummy content) | Figma: home |
 | 8 | Home | Home page with hero, categories, and product sections | Guest | In progress (uses the backend API) | Figma: home |
 | 9 | Products | Product list by category | Guest | In progress (/products) | Figma: products |

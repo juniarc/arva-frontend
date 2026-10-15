@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { CartPreviewItem } from "@/features/cart/cart-preview";
 import type { Category } from "@/features/products/types";
+import type { NavbarSession } from "@/lib/navbar/navbar.types";
 import { CartDrawer } from "./CartDrawer";
 import { MobileMenu } from "./MobileMenu";
 import { MobileSearchPanel } from "./MobileSearchPanel";
@@ -22,7 +23,7 @@ interface MobileHeaderProps {
   cartCount?: number;
   cartItems?: CartPreviewItem[];
   categories: Category[];
-  isAuthenticated: boolean;
+  session: NavbarSession;
 }
 
 /** Compact green header for small screens: logo, search, cart, and menu. One panel is open at a time. */
@@ -30,7 +31,7 @@ export function MobileHeader({
   cartCount = 0,
   cartItems,
   categories,
-  isAuthenticated,
+  session,
 }: MobileHeaderProps) {
   const [active, setActive] = useState<Panel | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -75,16 +76,15 @@ export function MobileHeader({
 
         <button
           type="button"
-          aria-label="Cart"
+          aria-label={cartCount > 0 ? `Cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}` : "Cart"}
           aria-haspopup="dialog"
           onClick={() => toggle("cart")}
           className={ICON_BUTTON}
         >
           <ShoppingBag className="size-5" aria-hidden="true" />
           {cartCount > 0 && (
-            <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-danger text-[10px] font-semibold text-white">
-              <span className="sr-only">{cartCount} items</span>
-              <span aria-hidden="true">{cartCount}</span>
+            <span aria-hidden="true" className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-danger text-[10px] font-semibold text-white">
+              {cartCount}
             </span>
           )}
         </button>
@@ -113,7 +113,7 @@ export function MobileHeader({
       <MobileMenu
         open={active === "menu"}
         onClose={closeIfActive("menu")}
-        isAuthenticated={isAuthenticated}
+        session={session}
         categories={categories}
       />
     </header>

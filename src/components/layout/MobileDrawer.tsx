@@ -11,7 +11,8 @@ interface MobileDrawerProps {
 }
 
 /**
- * Right-hand slide-in panel built on a native <dialog> (focus trap, Escape, backdrop).
+ * Right-hand slide-in panel built on a native <dialog> (focus trap, Escape, backdrop, and focus goes back
+ * to the button that opened it). The page behind is locked while it is open.
  * Open state is controlled by the parent so only one panel is open at a time.
  */
 export function MobileDrawer({
@@ -27,6 +28,16 @@ export function MobileDrawer({
     if (!dialog) return;
     if (open && !dialog.open) dialog.showModal();
     else if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  // The page behind does not scroll while the drawer is open.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
   }, [open]);
 
   return (

@@ -1,12 +1,15 @@
 "use client";
 
-import { Globe, Heart, LogOut, Receipt, Store, User, X } from "lucide-react";
+import { Globe, Heart, LogOut, Receipt, ShoppingCart, Store, User, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { Avatar } from "@/components/ui/Avatar";
 import { logout } from "@/features/auth/api/auth";
 import { categoryHref, categoryIcon } from "@/features/products/data/categories";
 import type { Category } from "@/features/products/types";
+import type { NavbarSession } from "@/lib/navbar/navbar.types";
+import { ORDER_HISTORY_HREF } from "./ProfileDropdown";
 import { MobileDrawer } from "./MobileDrawer";
 
 const ROW =
@@ -19,25 +22,26 @@ const FOCUS_RING =
 interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
-  isAuthenticated: boolean;
   categories: Category[];
-  /** Shown in the green header when signed in. Omitted until the backend can return the current user. */
-  user?: { username: string; email: string };
+  session: NavbarSession;
 }
 
 function Section({ children }: { children: ReactNode }) {
   return <div className="border-t border-ink/80 py-1">{children}</div>;
 }
 
+/** A guest is sent to log in first, and comes back to `href` afterwards. */
+function forGuest(href: string, guest: boolean): string {
+  return guest ? `/login?redirect=${encodeURIComponent(href)}` : href;
+}
+
 /** Navigation drawer for small screens. */
-export function MobileMenu({
-  open,
-  onClose,
-  isAuthenticated,
-  categories,
-  user,
-}: MobileMenuProps) {
+export function MobileMenu({ open, onClose, categories, session }: MobileMenuProps) {
   const router = useRouter();
+  const user = session.kind === "user" ? session : null;
+  const guest = user === null;
+  const shop = user?.shop ?? null;
+  const cartCount = user?.cart?.itemCount ?? 0;
 
   const handleLogout = async () => {
     if (!(await logout())) return;
@@ -45,6 +49,14 @@ export function MobileMenu({
     router.replace("/login");
     router.refresh();
   };
+
+  // My Shop: no shop opens Create Shop, a shop opens its page, and unknown goes to /my-shop to find out.
+  const shopLink =
+    shop?.status === "none"
+      ? { href: "/my-shop/create", label: "Create Shop" }
+      : shop?.status === "shop"
+        ? { href: `/shops/${shop.slug}`, label: shop.name }
+        : { href: forGuest("/my-shop", guest), label: "My Shop" };
 
   return (
     <MobileDrawer open={open} onClose={onClose} label="Navigation menu">
@@ -58,29 +70,25 @@ export function MobileMenu({
           <X className="size-5" aria-hidden="true" />
         </button>
 
-        <div className="flex items-center gap-4">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-white text-brand">
-            <User className="size-8" aria-hidden="true" />
-          </span>
-          {isAuthenticated ? (
+        {user ? (
+          <Link href="/profile" onClick={onClose} className={`flex items-center gap-4 ${FOCUS_RING}`}>
+            <Avatar src={user.user.photoUrl} name={user.user.username} size="lg" className="bg-white" />
+            <span className="min-w-0">
+              <span className="block truncate text-base font-bold">{user.user.username ?? "My Account"}</span>
+              {user.user.email && <span className="block truncate text-xs font-light">{user.user.email}</span>}
+            </span>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-4">
+            <Avatar src={null} name={null} size="lg" className="bg-white" />
             <div className="min-w-0">
-              <p className="truncate text-base font-semibold">
-                {user?.username ?? "My Account"}
-              </p>
-              {user && (
-                <p className="truncate text-[10px] font-light">{user.email}</p>
-              )}
+              <p className="text-sm">Log in to continue</p>
+              <Link href="/login" onClick={onClose} className={`text-base font-bold underline ${FOCUS_RING}`}>
+                Login
+              </Link>
             </div>
-          ) : (
-            <Link
-              href="/login"
-              onClick={onClose}
-              className={`text-base font-semibold hover:underline ${FOCUS_RING}`}
-            >
-              Sign In
-            </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <nav
@@ -90,9 +98,7 @@ export function MobileMenu({
         }}
         className="flex flex-1 flex-col overflow-y-auto px-6 pt-6"
       >
-        <h2 className="mb-3 font-serif text-xl font-bold text-ink">
-          Categories
-        </h2>
+        <h2 className="mb-3 font-serif text-xl font-bold text-ink">Categories</h2>
         <Section>
           <ul>
             {categories.map(({ id, name, slug, iconKey }) => {
@@ -109,30 +115,33 @@ export function MobileMenu({
           </ul>
         </Section>
 
-        {isAuthenticated && (
-          <Section>
-            <Link href="/wishlist" className={ROW}>
-              <Heart className="size-4 shrink-0" aria-hidden="true" />
-              Wishlist
-            </Link>
-            <Link href="/orders" className={ROW}>
-              <Receipt className="size-4 shrink-0" aria-hidden="true" />
-              My Orders
-            </Link>
-          </Section>
-        )}
-
         <Section>
-          <Link href="/shop" className={ROW}>
+          <Link href={shopLink.href} className={ROW}>
             <Store className="size-4 shrink-0" aria-hidden="true" />
-            My Shop
+            <span className="truncate">{shopLink.label}</span>
           </Link>
-        </Section>
-
-        <Section>
-          <Link href={isAuthenticated ? "/profile" : "/login"} className={ROW}>
+          <Link href={forGuest("/wishlist", guest)} className={ROW}>
+            <Heart className="size-4 shrink-0" aria-hidden="true" />
+            Wishlist
+          </Link>
+          <Link href={forGuest("/cart", guest)} className={ROW}>
+            <ShoppingCart className="size-4 shrink-0" aria-hidden="true" />
+            Cart
+            {cartCount > 0 && (
+              <span className="flex size-5 items-center justify-center rounded-full bg-danger text-[10px] font-semibold text-white">
+                <span className="sr-only">, </span>
+                {cartCount}
+                <span className="sr-only"> {cartCount === 1 ? "item" : "items"}</span>
+              </span>
+            )}
+          </Link>
+          <Link href={forGuest("/profile", guest)} className={ROW}>
             <User className="size-4 shrink-0" aria-hidden="true" />
-            {isAuthenticated ? "My Profile" : "Sign In"}
+            My Profile
+          </Link>
+          <Link href={forGuest(ORDER_HISTORY_HREF, guest)} className={ROW}>
+            <Receipt className="size-4 shrink-0" aria-hidden="true" />
+            Order History
           </Link>
         </Section>
 
@@ -147,7 +156,7 @@ export function MobileMenu({
         </Section>
       </nav>
 
-      {isAuthenticated && (
+      {user && (
         <div className="px-6 pb-6 pt-3">
           <button
             type="button"

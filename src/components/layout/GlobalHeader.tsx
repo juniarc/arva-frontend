@@ -1,51 +1,41 @@
-import { Heart, ShoppingCart, User } from "lucide-react";
-import { cookies } from "next/headers";
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { getCart } from "@/features/cart/api/cart.server";
-import { toCartPreview } from "@/features/cart/cart-preview";
+import type { CartPreviewItem } from "@/features/cart/cart-preview";
 import { getCategories } from "@/features/products/api/catalog.server";
-import { AUTH_COOKIE_NAME } from "@/lib/cookies";
+import { formatCurrency } from "@/lib/format";
+import { loadNavbarSession } from "@/lib/navbar/session.loader";
+import type { NavbarCart } from "@/lib/navbar/navbar.types";
 import { MobileHeader } from "./MobileHeader";
+import { NavbarClient } from "./NavbarClient";
 import { SearchBar } from "./SearchBar";
 import { TopBar } from "./TopBar";
 
-const NAV_LINK =
-  "relative flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-xs text-ink " +
-  "hover:text-brand focus-visible:outline-2 focus-visible:outline-info";
-
-function NavLink({
-  href,
-  label,
-  children,
-}: {
-  href: string;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <Link href={href} className={NAV_LINK}>
-      {children}
-      {/* On small screens only the icon shows; the label stays for screen readers. */}
-      <span className="sr-only md:not-sr-only">{label}</span>
-    </Link>
-  );
+/** The mobile cart drawer's rows. */
+function toDrawerItems(cart: NavbarCart): CartPreviewItem[] {
+  return cart.items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    imageUrl: item.imageUrl,
+    variant: item.variantLabel,
+    quantity: item.quantity,
+    price: formatCurrency(item.unitPrice),
+  }));
 }
 
-/** Site-wide header: utility bar, logo, search, and Wishlist / Cart / Profile links. */
+/**
+ * Site-wide header: utility bar, logo, search, and the Wishlist, Cart, My Shop and profile menus.
+ * It loads the session summaries itself on every request (they are personal, so nothing is cached).
+ */
 export async function GlobalHeader() {
-  // A token cookie means "logged in" here; the backend still verifies it on every real request.
-  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
-  const [categories, cart] = await Promise.all([getCategories(), token ? getCart(token) : undefined]);
-  const cartCount = cart?.itemCount ?? 0;
+  const [categories, session] = await Promise.all([getCategories(), loadNavbarSession()]);
+  const cart = session.kind === "user" ? session.cart : null;
 
   return (
     <>
       <MobileHeader
-        cartCount={cartCount}
-        cartItems={cart ? toCartPreview(cart) : undefined}
+        cartCount={cart?.itemCount ?? 0}
+        cartItems={cart ? toDrawerItems(cart) : undefined}
         categories={categories}
-        isAuthenticated={Boolean(token)}
+        session={session}
       />
       <header className="hidden border-b border-line/40 md:block">
         <TopBar />
@@ -54,25 +44,8 @@ export async function GlobalHeader() {
             Arva
           </Link>
 
-          <nav
-            aria-label="Account and shopping"
-            className="order-2 ml-auto flex items-center gap-1 md:order-3 md:gap-4"
-          >
-            <NavLink href="/wishlist" label="Wishlist">
-              <Heart className="size-4" aria-hidden="true" />
-            </NavLink>
-            <NavLink href="/cart" label="Cart">
-              <ShoppingCart className="size-4" aria-hidden="true" />
-              {cartCount > 0 && (
-                <span className="absolute right-1 top-1.5 flex size-3.5 items-center justify-center rounded-full bg-danger text-[9px] font-semibold text-white md:static md:-ml-2 md:-mt-3">
-                  <span className="sr-only">{cartCount} items</span>
-                  <span aria-hidden="true">{cartCount}</span>
-                </span>
-              )}
-            </NavLink>
-            <NavLink href="/profile" label="My Profile">
-              <User className="size-4" aria-hidden="true" />
-            </NavLink>
+          <nav aria-label="Account and shopping" className="order-2 ml-auto md:order-3">
+            <NavbarClient session={session} />
           </nav>
 
           <SearchBar className="order-3 w-full md:order-2 md:w-auto md:max-w-md md:flex-1" />
