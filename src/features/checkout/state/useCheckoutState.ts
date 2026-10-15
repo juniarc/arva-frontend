@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useReducer, useRef, useState } from "react";
-import { updateQuantity } from "@/features/cart/api/cart.client";
 import { useQuantityUpdates } from "@/features/cart/state/useQuantityUpdates";
 import {
   getDraft,
@@ -93,10 +92,9 @@ export function useCheckoutState(initialDraft: Draft) {
       setOrderCode(result.data.code);
       return;
     }
-    const comingSoon = result.status === 503 && result.code === "CHECKOUT_UNAVAILABLE";
     // A refused order (400, 409) says why, for example "Only 2 left of Banana.". The client never keeps a 5xx message.
     const reason = result.status === 400 || result.status === 409 ? result.message : ORDER_FAILED;
-    dispatch({ type: "request/failure", key: "order", message: comingSoon ? "Checkout is coming soon." : reason });
+    dispatch({ type: "request/failure", key: "order", message: reason });
   };
 
   return {

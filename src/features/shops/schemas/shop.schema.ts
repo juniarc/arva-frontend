@@ -98,5 +98,3 @@ export const shippingChannelsResponseSchema = z.object({ items: z.array(channel)
 
 export type ShopResponseDto = z.infer<typeof shopResponseSchema>["shop"];
 export type ShopProductItemDto = z.infer<typeof productItem>;
-export type ShopProductsResponseDto = z.infer<typeof shopProductsResponseSchema>;
-export type MyShopResponseDto = z.infer<typeof myShopResponseSchema>["shop"];

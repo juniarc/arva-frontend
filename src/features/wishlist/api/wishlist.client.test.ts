@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { addToWishlist, getWishlist, removeFromWishlist } from "./wishlist.client";
+import { addToWishlist, removeFromWishlist } from "./wishlist.client";
 
 const fetchMock = vi.fn();
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status });
@@ -33,12 +33,6 @@ describe("wishlist client", () => {
     expect(url).toBe("/api/wishlist");
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body as string)).toEqual({ productId: "7" });
-  });
-
-  it("getWishlist sends GET", async () => {
-    fetchMock.mockResolvedValue(json(200, wishlistBody));
-    await getWishlist();
-    expect((fetchMock.mock.calls[0] as [string, RequestInit])[1].method).toBe("GET");
   });
 
   it("never shows what the server said: a failed removal gives the designed message", async () => {

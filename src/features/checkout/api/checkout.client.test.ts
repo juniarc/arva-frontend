@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDraft, placeOrder, saveAddress } from "./checkout.client";
 
 const fetchMock = vi.fn();
@@ -9,44 +9,11 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
 });
 
-afterEach(() => {
-  vi.unstubAllEnvs();
-});
-
-describe("placeOrder and the dev-only flag", () => {
-  it("calls the real endpoint by default", async () => {
+describe("placeOrder", () => {
+  it("calls the orders endpoint", async () => {
     fetchMock.mockResolvedValue(json(201, { order: { id: 9, code: "ORD9" } }));
 
     expect(await placeOrder()).toEqual({ ok: true, data: { id: "9", code: "ORD9" } });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("with NEXT_PUBLIC_CHECKOUT_DEV_SUCCESS=true, outside production, shows the success screen without a request", async () => {
-    vi.stubEnv("NODE_ENV", "development");
-    vi.stubEnv("NEXT_PUBLIC_CHECKOUT_DEV_SUCCESS", "true");
-
-    expect(await placeOrder()).toEqual({ ok: true, data: { id: "dev", code: "ORD123" } });
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it("ignores the flag in production", async () => {
-    vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("NEXT_PUBLIC_CHECKOUT_DEV_SUCCESS", "true");
-    fetchMock.mockResolvedValue(json(503, { code: "CHECKOUT_UNAVAILABLE", message: "Checkout is coming soon." }));
-
-    const result = await placeOrder();
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(result).toMatchObject({ ok: false, status: 503, code: "CHECKOUT_UNAVAILABLE" });
-  });
-
-  it("is off when the flag is not 'true'", async () => {
-    vi.stubEnv("NODE_ENV", "development");
-    vi.stubEnv("NEXT_PUBLIC_CHECKOUT_DEV_SUCCESS", "false");
-    fetchMock.mockResolvedValue(json(404, { message: "Not found." }));
-
-    await placeOrder();
-
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

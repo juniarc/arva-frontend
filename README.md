@@ -2,6 +2,12 @@
 
 Marketplace website where users can buy and sell products.
 
+## About this project
+
+This is a rebuild project. Arva was first built as an earlier version (`juniarc/arva-gfp-frontend`), and this repository rebuilds it from scratch with a new stack and a cleaner structure.
+
+The rebuild is also a learning project: its goal is to learn how to get the most out of Claude AI in real software development. Claude is used as a coding partner across the whole process, from planning features and writing code to testing, debugging and keeping the documentation up to date. `CLAUDE.md` holds the project context and rules that guide it.
+
 ## Before you start (every session, on every machine)
 
 1. `git pull`

@@ -96,17 +96,8 @@ export function selectPaymentMethod(methodId: string): Promise<ApiResult<Draft>>
   return call("PUT", "/api/checkout/payment-method", { methodId }, parseDraft, "Could not select the payment method. Please try again.");
 }
 
-/**
- * POST /api/checkout/orders. Until payments exist the backend answers 503 with the code
- * CHECKOUT_UNAVAILABLE.
- *
- * DEV ONLY: with NEXT_PUBLIC_CHECKOUT_DEV_SUCCESS=true the success screen can be tested before payments
- * exist. The NODE_ENV check removes this branch from production builds, so the flag has no effect there.
- */
+/** POST /api/checkout/orders: places the order (the payment is simulated by the backend). */
 export function placeOrder(): Promise<ApiResult<Order>> {
-  if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_CHECKOUT_DEV_SUCCESS === "true") {
-    return Promise.resolve({ ok: true, data: { id: "dev", code: "ORD123" } });
-  }
   return call("POST", "/api/checkout/orders", undefined, parseOrder, "Could not place your order. Please try again.");
 }
 

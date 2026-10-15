@@ -419,14 +419,14 @@ describe("Pay Now", () => {
     expect(screen.queryByText(/to continue\./)).not.toBeInTheDocument();
   });
 
-  it("says 'Checkout is coming soon.' and stays on the page when the backend answers 503 CHECKOUT_UNAVAILABLE", async () => {
+  it("stays on the page, with the general message, when the backend is unavailable (503)", async () => {
     const user = userEvent.setup();
-    handlers.set("POST /api/checkout/orders", json(503, { code: "CHECKOUT_UNAVAILABLE", message: "Checkout is coming soon." }));
+    handlers.set("POST /api/checkout/orders", json(503, { message: "Maintenance" }));
     render(<CheckoutPage initialDraft={readyDraft()} />);
 
     await user.click(payButtons()[0]!);
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Checkout is coming soon.");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not place your order. Please try again.");
     expect(push).not.toHaveBeenCalled();
     expect(replace).not.toHaveBeenCalled();
     expect(screen.getByText("JNE Reguler (Rp 12.000)")).toBeInTheDocument();

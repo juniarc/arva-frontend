@@ -87,7 +87,6 @@ export const productFormSchema = z.object({
 });
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;
-export type VariantFormValues = ProductFormValues["variants"][number];
 
 const int = ({ min, max }: { min: number; max: number }) => z.number().int().min(min).max(max);
 

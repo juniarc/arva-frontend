@@ -189,6 +189,9 @@ Reason: no payment provider is needed for now. Pay Now creates the order already
 **The navbar loads its own session summaries; Order History links to /orders; default pictures are icons.**
 Reason: `GlobalHeader` reads the cookie and loads the user, cart and shop summaries itself, so the (site), (auth) and (main) layouts did not need to change. Each summary fails on its own: a failed cart keeps the trigger without a badge ("Cart is not available right now."), a failed profile falls back to the /auth/me username and the default avatar, `/shops/me` 404 is "no shop", and any other shop failure is the plain My Shop link. The shop card calls `/shops/me` (slug, logo) and then `/shops/:slug` (city and rating, which /shops/me lacks; extending /shops/me would save a call). The brief asked for an "Order History coming soon" page, but order history already works at `/orders`, so the menus link there and `/order-history` forwards to it. The default avatar and shop logo are a person or shop icon on a neutral circle, so no image files are needed. Dropdowns show wherever the desktop header shows (from 768px). Logout only clears the cookie: the token stays valid until it expires, and revoking it is a later backend task.
 
+**Cleanup before deploying to Vercel.**
+Reason: the dev-only `NEXT_PUBLIC_CHECKOUT_DEV_SUCCESS` flag and the "Checkout is coming soon" (503 `CHECKOUT_UNAVAILABLE`) handling were removed, because orders are real now (the earlier decisions about them are history). Unused code was removed too: `AuthIllustration`, `getCart` (the navbar loads the cart), `toCartPreview`, `getWishlist` (the wishlist page loads on the server), `PUBLIC_ROUTES`/`isPublicRoute` and two unused types. `.env.example` now shows `API_BASE_URL` with `/api`, as the code expects.
+
 ## Open questions
 
 - Payments provider (decide after the main features are done).

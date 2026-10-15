@@ -11,15 +11,6 @@ function authHeaders(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
 }
 
-/** GET /cart. Returns undefined when the cart cannot be read (not logged in, token expired, backend down). */
-export async function getCart(token: string): Promise<Cart | undefined> {
-  const result = await requestJson(`${getEnv().API_BASE_URL}/cart`, { headers: authHeaders(token) });
-  if (!result.ok) return undefined;
-
-  const parsed = cartSchema.safeParse(result.data);
-  return parsed.success ? parsed.data : undefined;
-}
-
 export type AddToCartBackendResult =
   | { ok: true; cart: Cart }
   | { ok: false; status: number; message: string };
